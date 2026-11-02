@@ -1,0 +1,74 @@
+/* Paleta del reactor: verde tóxico neón + amarillo de advertencia (peligro) */
+:root {
+  --bg: #070b05; --panel: #0e1507; --panel2: #17230b; --line: #35561a;
+  --text: #f4ffe3; --muted: #9fba7d;
+  --accent: #b8ff2e; --ok: #b8ff2e; --warn: #ffd60a; --bad: #ff4a1c;
+}
+body { background: radial-gradient(1100px 650px at 75% -10%, #1d2e08, var(--bg)); background-attachment: fixed; }
+.topbar { background: rgba(7, 11, 5, .92); border-bottom: 0; position: relative; padding-bottom: 18px; }
+.topbar::after {   /* franja de peligro */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px;
+  background: repeating-linear-gradient(-45deg, #ffd60a 0 14px, #0b0f06 14px 28px);
+}
+.topbar h1 { text-shadow: 0 0 16px rgba(184, 255, 46, .5); }
+.topbar .back:hover, .topbar .back:focus-visible { background: var(--panel2); }
+.btn:hover { background: #26390f; }
+.btn.primary { color: #0a1203; }
+.btn.primary:hover { background: #d4ff6b; }
+.btn.danger { background: #4a1405; }
+.overlay { background: rgba(4, 7, 3, .86); }
+kbd { background: #0a1006; }
+
+.topstats { display: flex; gap: 22px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.topstats b { color: var(--text); }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
+  gap: 18px;
+  padding: 18px 22px 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+.viz { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.viz canvas {
+  width: 100%; height: auto; display: block;
+  background: #0a1006; border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.controls { display: flex; flex-direction: column; gap: 16px; }
+
+.meter-head, .slider-head { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 6px; }
+.meter-head b, .slider-head b { font-variant-numeric: tabular-nums; color: var(--accent); }
+.meter-track {
+  position: relative; height: 26px; border-radius: 8px;
+  background: #0a1006; border: 1px solid var(--line); overflow: hidden;
+}
+.meter .zone { position: absolute; top: 0; bottom: 0; background: rgba(184, 255, 46, .2); border-left: 2px solid var(--ok); border-right: 2px solid var(--ok); }
+.meter .fill { position: absolute; left: 0; top: 6px; bottom: 6px; border-radius: 0 6px 6px 0; transition: background .2s; }
+.meter .fill.pow { background: var(--warn); box-shadow: 0 0 10px rgba(255, 214, 10, .6); }
+.meter .fill.temp { background: var(--ok); box-shadow: 0 0 10px rgba(184, 255, 46, .55); }
+.meter .fill.temp.cold { background: #5dffc4; }
+.meter .fill.temp.hot { background: var(--warn); }
+.meter .fill.temp.danger { background: var(--bad); }
+.meter .marker { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; box-shadow: 0 0 6px #fff; }
+
+.slider { display: block; }
+.slider input[type=range] { width: 100%; height: 34px; accent-color: var(--accent); cursor: pointer; }
+
+.actions { display: flex; gap: 10px; }
+.actions .btn { flex: 1; }
+
+#log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-height: 112px; }
+#log li { font-size: .95rem; padding: 6px 10px; border-radius: 8px; background: #0b1206; border-left: 4px solid var(--line); }
+#log li.warn { border-left-color: var(--warn); }
+#log li.bad  { border-left-color: var(--bad); background: #2b0f07; }
+#log li.ok   { border-left-color: var(--ok); }
+#log li.info { border-left-color: var(--accent); }
+#log li:not(:first-child) { opacity: .65; }
+
+.fact { margin: 0; font-size: .9rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 12px; min-height: 3.2em; }
+.fact::before { content: "💡 "; }
+.learn { font-size: .95rem; }

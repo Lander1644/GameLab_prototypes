@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estabiliza el reactor</title>
+  <link rel="stylesheet" href="../shared/style.css">
+  <link rel="stylesheet" href="reactor.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">← Menú</a>
+    <h1>☢ Estabiliza el reactor</h1>
+    <div class="topstats">
+      <span><span id="time">0:00</span> / <span id="duration">1:30</span></span>
+      <span>Estable: <b id="pct">100 %</b></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="viz">
+      <canvas id="core" width="1120" height="800" role="img"
+              aria-label="Núcleo del reactor con las barras de control y el refrigerante"></canvas>
+      <canvas id="chart" width="1120" height="360" role="img"
+              aria-label="Gráfica de temperatura y potencia de los últimos segundos"></canvas>
+    </section>
+
+    <section class="panel controls">
+      <div class="meter">
+        <div class="meter-head"><span>🌡 Temperatura</span><b id="vTemp">297 °C</b></div>
+        <div class="meter-track"><div class="zone" id="zoneT"></div><div class="fill temp" id="fillT"></div></div>
+        <small>Mantenla en la <b>zona verde</b>. Si llega a 420 °C, el núcleo se funde.</small>
+      </div>
+
+      <div class="meter">
+        <div class="meter-head"><span>⚡ Potencia</span><b id="vPow">50 %</b></div>
+        <div class="meter-track"><div class="zone" id="zoneP"></div><div class="fill pow" id="fillP"></div><div class="marker" id="markDemand"></div></div>
+        <small>La red pide <b id="vDemand">50 %</b>: deja la barra dentro de la <b>zona verde</b>.</small>
+      </div>
+
+      <label class="slider">
+        <span class="slider-head">Barras de control (insertadas) <b id="vRods">40 %</b></span>
+        <input type="range" id="rods" min="0" max="100" step="1" value="40">
+        <small>Más insertadas = menos potencia. Teclas <kbd>↑</kbd> <kbd>↓</kbd> (↑ sube la potencia)</small>
+      </label>
+
+      <label class="slider">
+        <span class="slider-head">Bomba de refrigerante <b id="vPump">50 %</b></span>
+        <input type="range" id="pump" min="0" max="100" step="1" value="50">
+        <small>Más agua fría = menos temperatura. Teclas <kbd>←</kbd> <kbd>→</kbd></small>
+      </label>
+
+      <div class="actions">
+        <button class="btn danger" id="scram" title="Apagado de emergencia">⛔ SCRAM</button>
+        <button class="btn" id="pause">Pausa (P)</button>
+      </div>
+
+      <ul id="log" aria-live="polite"></ul>
+      <p class="fact" id="fact"></p>
+    </section>
+  </main>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>☢ Estabiliza el reactor</h2>
+      <p>Eres el operador de una central nuclear. Tu trabajo es dar a la red eléctrica la energía que pide sin que el núcleo se sobrecaliente.</p>
+      <ol>
+        <li>Mueve las <b>barras de control</b> para que la <b>potencia</b> siga lo que pide la red.</li>
+        <li>Ajusta la <b>bomba de refrigerante</b> para mantener la <b>temperatura</b> en la zona verde.</li>
+        <li>Vigila los avisos: habrá <b>fugas</b>, <b>picos</b> y cambios de demanda.</li>
+      </ol>
+      <p>Elige la dificultad para empezar:</p>
+      <div class="row">
+        <button class="btn primary big" data-diff="facil">Fácil · 1 min</button>
+        <button class="btn primary big" data-diff="normal">Normal · 1,5 min</button>
+        <button class="btn primary big" data-diff="dificil">Difícil · 2 min</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="endOverlay">
+    <div class="card">
+      <h2 id="endTitle"></h2>
+      <div class="stars" id="endStars"></div>
+      <p id="endText"></p>
+      <p id="endStats"></p>
+      <p class="learn" id="endLearn"></p>
+      <div class="row">
+        <button class="btn primary big" id="again">Jugar otra vez</button>
+        <button class="btn big" id="changeDiff">Cambiar dificultad</button>
+        <a class="btn big" href="../index.html" style="text-decoration:none">Menú</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="sim.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

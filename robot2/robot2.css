@@ -1,0 +1,128 @@
+:root { --notch: #0a1128; --mouth: #0a1128; }
+
+#chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  cursor: pointer; min-width: 52px; padding: 4px 10px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--line); text-align: center; line-height: 1.15;
+}
+.chip b { display: block; font-size: 1.05rem; }
+.chip i { font-style: normal; font-size: .7rem; color: var(--warn); letter-spacing: 1px; }
+.chip.active { border-color: var(--accent); background: var(--panel2); box-shadow: 0 0 0 2px rgba(56, 225, 255, .25); }
+
+.layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 18px; padding: 18px 22px 40px; max-width: 1500px; margin: 0 auto;
+}
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.stage canvas {
+  width: 100%; height: auto; display: block;
+  background: #0d142b; border: 1px solid var(--line); border-radius: var(--radius);
+}
+#status { min-height: 3.2em; margin: 12px 4px 0; font-size: 1.05rem; }
+#status.bad { color: var(--bad); }
+#status.ok { color: var(--ok); }
+#status.warn { color: var(--warn); }
+
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 0; margin: 8px 4px 0; color: var(--muted); font-size: .9rem; }
+.legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+.sw.steel { background: #3b4a80; border: 2px solid #8a98c9; }
+.sw.rock { background: #b57a3d; border: 2px solid #6b4220; }
+.sw.bat { background: #ffc13d; }
+.sw.goal { background: #3dff9a; }
+
+.side { display: flex; flex-direction: column; gap: 14px; }
+.lvl-head h2 { font-size: 1.4rem; }
+.lvl-head p { margin: 6px 0 0; color: var(--muted); }
+
+.workspace { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1250px) and (min-width: 1001px), (max-width: 620px) { .workspace { grid-template-columns: 1fr; } }
+
+.palette {
+  display: flex; flex-direction: column; gap: 14px; padding: 12px 10px 16px;
+  background: #0a1128; border: 1px solid var(--line); border-radius: 12px; transition: background .15s, border-color .15s;
+  position: sticky; top: 10px;      /* la paleta sigue visible aunque el programa sea largo y haya que bajar la página */
+}
+.palette.trash { background: #2a1020; border-color: var(--bad); }
+.palette.trash::after { content: "Suelta aquí para borrar"; color: var(--bad); font-size: .85rem; text-align: center; }
+.pblock { cursor: grab; touch-action: none; }
+.pblock .block select { pointer-events: none; }
+.palette .block { font-size: .95rem; }
+.palette .block.c > .chead { flex-wrap: wrap; gap: 4px 6px; }
+.palette .block select { font-size: .85rem; max-width: 150px; }
+.palette .slot:empty::before { content: ""; padding: 8px; margin: 4px 8px 0 0; }
+.palette .block.c > .slot { min-height: 28px; }
+
+.programWrap {
+  background: var(--mouth); border: 1px solid var(--line); border-radius: 12px; padding: 10px 10px 14px;
+  min-height: 280px;
+}
+.hat {
+  display: inline-block; background: #ffbf00; color: #3b2a00; font-weight: 800;
+  padding: 8px 18px 6px; border-radius: 18px 18px 6px 6px; margin-bottom: 0; position: relative;
+}
+.hat::after { content: ""; position: absolute; bottom: -6px; left: 14px; width: 20px; height: 6px; background: #ffbf00; border-radius: 0 0 5px 5px; z-index: 1; }
+
+.slot { min-height: 40px; padding-bottom: 8px; }
+.slot.root { padding-top: 0; }
+.slot:empty::before {
+  content: "arrastra bloques aquí"; display: block; padding: 10px 12px; color: #4f5f98; font-size: .88rem;
+  border: 2px dashed #28356b; border-radius: 8px; margin: 6px 0 0;
+}
+.slot.root:empty::before { margin-top: 12px; }
+
+/* ----- Bloques estilo Scratch ----- */
+.block {
+  --c: #2f73e0;
+  position: relative; display: flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 8px 12px;
+  background: var(--c); color: #fff; font-weight: 700; border-radius: 6px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2);
+  user-select: none; -webkit-user-select: none; touch-action: none; cursor: grab;
+}
+.block::before {   /* muesca superior */
+  content: ""; position: absolute; top: 0; left: 14px; width: 20px; height: 6px;
+  background: var(--notch); border-radius: 0 0 5px 5px;
+}
+.block::after {    /* pestaña inferior que encaja en el siguiente bloque */
+  content: ""; position: absolute; bottom: -6px; left: 14px; width: 20px; height: 6px;
+  background: var(--c); border-radius: 0 0 5px 5px; z-index: 1;
+}
+.block.X { --c: #e0405f; }
+.block.FOR, .block.WHILE { --c: #ffab19; color: #3b2400; }
+
+.block.c { display: block; padding: 0; }
+.block.c > .chead { display: flex; align-items: center; gap: 8px; padding: 8px 12px; min-height: 40px; border-radius: 6px 6px 0 0; }
+.block.c > .slot { margin-left: 18px; background: var(--mouth); padding: 0 0 8px; min-height: 36px; }
+.block.c > .slot:empty::before { margin: 4px 8px 0 0; }
+.block.c > .cfoot { height: 16px; border-radius: 0 0 6px 6px; }
+.block.c::before { z-index: 2; }
+
+.block select {
+  font: inherit; font-weight: 700; color: #222; background: #fff; border: 0; border-radius: 999px;
+  padding: 3px 8px; cursor: pointer;
+}
+.block select:focus-visible { outline: 3px solid #fff; }
+
+.running { outline: 3px solid #fff; outline-offset: 1px; box-shadow: 0 0 16px #fff; z-index: 3; }
+.block.err > .chead, .block.err.simple, .err { outline: 3px solid var(--bad); box-shadow: 0 0 16px var(--bad); }
+.flash-yes { box-shadow: 0 0 0 3px #3dff9a, 0 0 16px #3dff9a; }
+.flash-no { box-shadow: 0 0 0 3px #ff9b9b, 0 0 16px #ff9b9b; }
+
+.ghost {
+  position: fixed; z-index: 70; pointer-events: none; opacity: .93;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .55)); transform: rotate(-2deg);
+}
+.drop-ind {
+  position: fixed; z-index: 60; height: 6px; border-radius: 3px; pointer-events: none;
+  background: #fff; box-shadow: 0 0 10px #fff, 0 0 3px var(--accent);
+}
+
+.foot { display: flex; flex-direction: column; gap: 4px; }
+#count { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
+#count.full { color: var(--warn); }
+.tip { display: block; line-height: 1.4; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions .btn { flex: 1 1 auto; }
+.actions .primary { flex: 2 1 170px; }
+.learn { font-size: .98rem; }

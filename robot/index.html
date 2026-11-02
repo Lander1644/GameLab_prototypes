@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Programa al robot (v1)</title>
+  <link rel="stylesheet" href="../shared/style.css">
+  <link rel="stylesheet" href="robot.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">← Menú</a>
+    <h1>🤖 Programa al robot (v1)</h1>
+    <nav id="chips" aria-label="Niveles"></nav>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <canvas id="board" width="900" height="700" role="img"
+              aria-label="Tablero del nivel: el robot debe llegar a la meta"></canvas>
+      <p id="status" aria-live="polite"></p>
+    </section>
+
+    <aside class="side panel">
+      <div class="lvl-head">
+        <h2 id="lvlName"></h2>
+        <p id="lvlHint"></p>
+      </div>
+
+      <div class="palette">
+        <button class="btn blk F" data-add="F">↑ Avanzar</button>
+        <button class="btn blk L" data-add="L">↰ Girar izq.</button>
+        <button class="btn blk R" data-add="R">↱ Girar der.</button>
+        <button class="btn blk REP" data-add="REP">⟳ Repetir</button>
+      </div>
+
+      <div class="program-head">
+        <button class="btn-link" id="mainHead" title="Añadir instrucciones al programa principal">Programa</button>
+        <span id="count"></span>
+      </div>
+      <div id="program" class="program"></div>
+      <small class="tip">Toca un bloque para añadirlo. Toca ✕ para quitarlo, el número para cambiar las repeticiones y «Repetir» para añadir cosas dentro de él.</small>
+
+      <div class="actions">
+        <button class="btn primary big" id="run">▶ Ejecutar</button>
+        <button class="btn" id="reset">Reiniciar robot</button>
+        <button class="btn" id="clear">Borrar todo</button>
+        <button class="btn" id="speed">Velocidad: normal</button>
+      </div>
+      <small class="tip">Teclas: <kbd>↑</kbd> avanzar · <kbd>←</kbd> <kbd>→</kbd> girar · <kbd>⌫</kbd> quitar el último · <kbd>Enter</kbd> ejecutar</small>
+    </aside>
+  </main>
+
+  <div class="overlay hidden" id="winOverlay">
+    <div class="card">
+      <h2>¡Misión cumplida!</h2>
+      <div class="stars" id="winStars"></div>
+      <p id="winBlocks"></p>
+      <p class="learn" id="winLearn"></p>
+      <div class="row">
+        <button class="btn primary big" id="next">Siguiente nivel →</button>
+        <button class="btn big" id="replay">Repetir nivel</button>
+        <a class="btn big" href="../index.html">Menú</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="logic.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

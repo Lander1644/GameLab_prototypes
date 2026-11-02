@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GameLab · Juegos para la feria</title>
+  <link rel="stylesheet" href="shared/style.css">
+  <style>
+    .hero { text-align: center; padding: 44px 20px 10px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); max-width: 640px; margin: 12px auto 0; }
+    .grid {
+      display: grid; gap: 22px; padding: 30px 22px 50px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      max-width: 1000px; margin: 0 auto;
+    }
+    .game {
+      display: flex; flex-direction: column; gap: 10px;
+      text-decoration: none; color: inherit;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+    }
+    .game:hover, .game:focus-visible { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 40px rgba(56, 225, 255, .15); outline: none; }
+    .game .icon { font-size: 3rem; line-height: 1; }
+    .game h2 { font-size: 1.5rem; }
+    .game p { margin: 0; color: var(--muted); flex: 1; }
+    .game .play { color: var(--accent); font-weight: 700; }
+    footer { text-align: center; color: var(--muted); padding: 0 20px 30px; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Game<span>Lab</span></h1>
+    <p>Pequeños videojuegos para descubrir ciencia y programación. Elige uno para jugar.</p>
+  </header>
+
+  <main class="grid">
+    <a class="game" href="reactor/index.html">
+      <div class="icon">☢️</div>
+      <h2>Estabiliza el reactor</h2>
+      <p>Eres el operador de una central nuclear: controla las barras y el refrigerante para dar energía a la red sin que el núcleo se sobrecaliente.</p>
+      <span class="play">Jugar →</span>
+    </a>
+
+    <a class="game" href="robot/index.html">
+      <div class="icon">🤖</div>
+      <h2>Programa al robot (v1)</h2>
+      <p>Arma un programa con bloques para llevar al robot hasta la meta. 6 niveles: desde dar un paso hasta usar bucles dentro de bucles.</p>
+      <span class="play">Jugar →</span>
+    </a>
+
+    <a class="game" href="robot2/index.html">
+      <div class="icon">🧩</div>
+      <h2>Programa al robot</h2>
+      <p>Versión con bloques estilo Scratch: arrastra «repetir» y «mientras», y usa «romper» para abrirte paso entre las rocas (¡pero no en los muros de acero!).</p>
+      <span class="play">Jugar →</span>
+    </a>
+  </main>
+
+  <footer>Tip para la feria: presiona <kbd>F11</kbd> para jugar en pantalla completa.</footer>
+</body>
+</html>
