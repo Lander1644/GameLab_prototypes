@@ -173,8 +173,9 @@
     return p;
   }
 
+  /* 3 estrellas: igual o menos bloques que la solución de referencia; 2: hasta 1,5 veces; 1: el resto */
   function starsFor(blocks, par) {
-    return blocks <= par ? 3 : blocks <= par + 2 ? 2 : 1;
+    return blocks <= par ? 3 : blocks <= Math.ceil(par * 1.5) ? 2 : 1;
   }
 
   const api = {

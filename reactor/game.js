@@ -31,7 +31,7 @@
   let sim = Sim.create('normal');
   let active = false, paused = false, diffKey = 'normal';
   let last = 0, acc = 0, histAcc = 0, logSeen = 0, factIdx = 0, factClock = 0;
-  let history = [], bubbles = [], flowPhase = 0, fanAngle = 0, endTimer = null;
+  let history = [], bubbles = [], flowPhase = 0, steamPhase = 0, pumpAngle = 0, fanAngle = 0, endTimer = null;
 
   const fmtTime = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
@@ -123,12 +123,24 @@
     c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
   }
 
-  function pipe(points, color, phase) {
+  function pipe(points, color, phase, w, inner) {
+    w = w || 16; inner = inner || 7;
     g.lineJoin = 'round'; g.lineCap = 'butt';
     g.beginPath(); points.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])));
-    g.setLineDash([]); g.strokeStyle = '#1c2a0c'; g.lineWidth = 16; g.stroke();
-    g.setLineDash([9, 11]); g.lineDashOffset = -phase; g.strokeStyle = color; g.lineWidth = 7; g.stroke();
+    g.setLineDash([]); g.strokeStyle = '#1a2550'; g.lineWidth = w; g.stroke();
+    g.setLineDash([9, 11]); g.lineDashOffset = -phase; g.strokeStyle = color; g.lineWidth = inner; g.stroke();
     g.setLineDash([]);
+  }
+
+  const mix = (c1, c2, t) => 'rgb(' + c1.map((v, i) => Math.round(v + (c2[i] - v) * t)).join(',') + ')';
+
+  function drawPump(px, py, r) {
+    g.fillStyle = '#18224a'; g.strokeStyle = sim.leak > 0 ? '#ff4d6d' : '#5c6fb3'; g.lineWidth = 3;
+    g.beginPath(); g.arc(px, py, r, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.save(); g.translate(px, py); g.rotate(pumpAngle); g.fillStyle = '#9fb0ea';
+    for (let i = 0; i < 5; i++) { g.rotate((Math.PI * 2) / 5); g.beginPath(); g.ellipse(0, -r * 0.5, r * 0.15, r * 0.38, 0, 0, Math.PI * 2); g.fill(); }
+    g.restore();
+    g.fillStyle = '#18224a'; g.beginPath(); g.arc(px, py, r * 0.16, 0, Math.PI * 2); g.fill();
   }
 
   function drawCore(dt, time) {
@@ -136,52 +148,81 @@
     const hot = clamp((T - 150) / 270, 0, 1);
     // Verde mientras todo va bien -> amarillo -> rojo al acercarse a la fusión
     const hue = hot < 0.54 ? 160 - 111 * hot : 100 - 217 * (hot - 0.54);
-    const vx = 150, vy = 80, vw = 260, vh = 270;
+    const vx = 60, vy = 80, vw = 190, vh = 270;          // vasija del reactor (con agua)
+    const cx0 = vx + 26, cw = vw - 52, cy0 = vy + 110, ch = 124;   // bloque del núcleo, rodeado de agua
+    const ex = 300, ey = 115, ew = 90, eh = 150;         // intercambiador de calor
+    const tx = 440, ty = 115, tw = 100, th = 90;         // turbina
+    const pumpX = 34, pumpY = 378;                       // bomba del refrigerante (esquina inferior izquierda)
 
     g.clearRect(0, 0, CW, CH);
-    g.fillStyle = '#0a1006'; g.fillRect(0, 0, CW, CH);
+    g.fillStyle = '#0d142b'; g.fillRect(0, 0, CW, CH);
 
-    // Circuito de refrigeración: núcleo -> turbina -> bomba -> núcleo
-    const speed = sim.pump * (sim.leak > 0 ? 0.55 : 1) * 1.1;
-    flowPhase += speed * dt;
-    const hotColor = `hsl(${Math.max(0, 52 - 52 * hot)} 100% 55%)`, coldColor = '#b8ff2e';
-    pipe([[vx + vw, vy + 50], [505, vy + 50], [505, 165]], hotColor, flowPhase);
-    pipe([[505, 255], [505, 384], [95, 384], [95, vy + 235], [vx, vy + 235]], coldColor, flowPhase);
+    const hotColor = `hsl(${hue} 85% 55%)`, coldColor = 'hsl(205 85% 55%)';
+    const pumpEff = sim.pump * (sim.leak > 0 ? 0.55 : 1);
+    flowPhase += pumpEff * 1.1 * dt;                     // circuito primario: depende de la bomba
+    steamPhase += (30 + P * 0.9) * dt;                   // circuito secundario: depende de la potencia
+    pumpAngle += (pumpEff / 100) * 14 * dt;
+
+    // Intercambiador de calor: el circuito primario calienta el agua del secundario (turbina)
+    g.fillStyle = '#18224a'; g.strokeStyle = '#5c6fb3'; g.lineWidth = 2;
+    roundRect(g, ex, ey, ew, eh, 10); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(56,225,255,.10)'; roundRect(g, ex + 3, ey + 3, ew - 6, eh - 6, 8); g.fill();
+
+    // Circuito primario: vasija -> intercambiador (serpentín) -> bomba -> vasija
+    const coil = g.createLinearGradient(0, 140, 0, 240);
+    coil.addColorStop(0, hotColor); coil.addColorStop(1, coldColor);
+    pipe([[vx + vw, vy + 60], [ex, vy + 60]], hotColor, flowPhase);
+    pipe([[ex, 140], [ex + 75, 162], [ex + 15, 188], [ex + 75, 214], [ex, 240]], coil, flowPhase, 11, 5);
+    pipe([[ex, 240], [270, 240], [270, pumpY], [pumpX, pumpY], [pumpX, vy + 235], [vx, vy + 235]], coldColor, flowPhase);
+    drawPump(pumpX, pumpY, 19);
+
+    // Circuito secundario: vapor -> turbina -> agua de regreso
+    pipe([[ex + ew, 150], [tx, 150]], '#d6ecff', steamPhase);
+    pipe([[tx + tw / 2, ty + th], [tx + tw / 2, 235], [ex + ew, 235]], '#4aa8ff', steamPhase);
 
     // Turbina (el ventilador gira con la potencia)
     fanAngle += (P / 100) * 8 * dt;
-    g.fillStyle = '#141f0a'; g.strokeStyle = '#7fb326'; g.lineWidth = 2;
-    roundRect(g, 466, 160, 78, 100, 10); g.fill(); g.stroke();
-    g.save(); g.translate(505, 205); g.rotate(fanAngle); g.fillStyle = '#d8ff7a';
-    for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.ellipse(0, -14, 5, 14, 0, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#18224a'; g.strokeStyle = '#5c6fb3'; g.lineWidth = 2;
+    roundRect(g, tx, ty, tw, th, 10); g.fill(); g.stroke();
+    g.save(); g.translate(tx + tw / 2, ty + th / 2); g.rotate(fanAngle); g.fillStyle = '#9fb0ea';
+    for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.ellipse(0, -17, 6, 17, 0, 0, Math.PI * 2); g.fill(); }
     g.restore();
-    g.fillStyle = '#9fba7d'; g.font = '12px system-ui, sans-serif'; g.textAlign = 'center';
-    g.fillText('Turbina', 505, 250);
-    g.fillText('Núcleo', vx + vw / 2, vy + vh + 18);
 
-    // Vasija con agua
+    g.fillStyle = '#93a0cf'; g.font = '12px system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText('Intercambiador de calor', ex + ew / 2, ey - 7);
+    g.fillText('Turbina', tx + tw / 2, ty - 7);
+    g.fillText('Circuito secundario', 465, 262);
+    g.textAlign = 'left'; g.fillText('Bomba', 58, 397);
+
+    // Vasija: el agua rodea al bloque del núcleo
     g.save();
     roundRect(g, vx, vy, vw, vh, 18); g.clip();
-    g.fillStyle = `hsl(${hue} 90% ${19 + hot * 8}%)`; g.fillRect(vx, vy, vw, vh);
-    const cx = vx + vw / 2, cy = vy + vh * 0.62;
-    const glow = g.createRadialGradient(cx, cy, 8, cx, cy, 160);
-    glow.addColorStop(0, `rgba(214,255,60,${clamp(P / 120, 0, 1) * 0.8})`);
-    glow.addColorStop(1, 'rgba(255,214,10,0)');
+    g.fillStyle = `hsl(${hue} 70% ${18 + hot * 8}%)`; g.fillRect(vx, vy, vw, vh);
+
+    // Circulación del agua: baja por los costados y sube por el núcleo (más rápido con la bomba)
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 3; g.setLineDash([6, 12]); g.lineDashOffset = -flowPhase;
+    for (const lx of [vx + 13, vx + vw - 13]) { g.beginPath(); g.moveTo(lx, vy + 24); g.lineTo(lx, vy + vh - 14); g.stroke(); }
+    g.setLineDash([]);
+
+    // Bloque del núcleo: se calienta con la potencia
+    const k = clamp(P / 100, 0, 1);
+    g.fillStyle = '#141b38'; roundRect(g, cx0, cy0, cw, ch, 10); g.fill();
+    g.fillStyle = `rgba(255,150,40,${0.10 + 0.55 * k})`; roundRect(g, cx0, cy0, cw, ch, 10); g.fill();
+    const glow = g.createRadialGradient(cx0 + cw / 2, cy0 + ch / 2, 6, cx0 + cw / 2, cy0 + ch / 2, cw * 0.75);
+    glow.addColorStop(0, `rgba(255,205,90,${0.55 * k})`); glow.addColorStop(1, 'rgba(255,120,0,0)');
     g.fillStyle = glow; g.fillRect(vx, vy, vw, vh);
+    g.lineWidth = 3; g.strokeStyle = mix([92, 111, 179], [255, 190, 90], k);
+    roundRect(g, cx0, cy0, cw, ch, 10); g.stroke();
 
-    // Combustible
-    for (let i = 0; i < 8; i++) {
-      const fx = vx + 18 + i * 32;
-      const k = clamp(P / 100, 0, 1);
-      g.fillStyle = `rgb(${Math.round(110 + 145 * k)},${Math.round(125 + 100 * k)},${Math.round(60 + 40 * k)})`;
-      roundRect(g, fx, vy + 130, 12, 125, 4); g.fill();
-    }
+    // Combustible (uranio): 5 varillas dentro del núcleo
+    g.fillStyle = `rgb(${Math.round(110 + 145 * k)},${Math.round(125 + 100 * k)},${Math.round(60 + 40 * k)})`;
+    for (let i = 0; i < 5; i++) roundRect(g, cx0 + 16 + i * 26, cy0 + 8, 12, ch - 16, 4), g.fill();
 
-    // Burbujas (más potencia = más burbujas)
+    // Burbujas (más potencia = más burbujas), suben desde el núcleo
     if (active && !paused && Math.random() < P / 160) {
-      bubbles.push({ x: vx + 14 + Math.random() * (vw - 28), y: vy + 250, v: 40 + Math.random() * 50, r: 1.5 + Math.random() * 2.5 });
+      bubbles.push({ x: cx0 + 8 + Math.random() * (cw - 16), y: cy0 + ch - 10, v: 40 + Math.random() * 50, r: 1.5 + Math.random() * 2.5 });
     }
-    g.fillStyle = 'rgba(220,255,120,.4)';
+    g.fillStyle = 'rgba(255,255,255,.35)';
     bubbles = bubbles.filter((b) => b.y > vy + 4);
     for (const b of bubbles) {
       if (active && !paused) { b.y -= b.v * dt; b.x += Math.sin(b.y * 0.1) * 0.3; }
@@ -189,31 +230,34 @@
     }
     g.restore();
 
-    // Barras de control
-    const tip = vy + (sim.rods / 100) * 240;
-    for (let i = 0; i < 7; i++) {
-      const rx = vx + 34 + i * 32;
-      g.fillStyle = '#c4c9b8'; g.fillRect(rx, 28, 10, tip - 28);
-      g.fillStyle = '#7a806c'; g.fillRect(rx + 7, 28, 3, tip - 28);
-      g.fillStyle = '#f2ffd0'; g.fillRect(rx, tip - 6, 10, 6);
+    // Barras de control: bajan desde arriba hacia los huecos entre varillas de combustible
+    const tip = cy0 + (sim.rods / 100) * (ch - 14);
+    for (let i = 0; i < 4; i++) {
+      const rx = cx0 + 31 + i * 26;
+      g.fillStyle = '#b6bfdc'; g.fillRect(rx, 28, 8, tip - 28);
+      g.fillStyle = '#6f7aa6'; g.fillRect(rx + 5, 28, 3, tip - 28);
+      g.fillStyle = '#e8ecff'; g.fillRect(rx, tip - 6, 8, 6);
     }
-    g.fillStyle = '#33481a'; g.fillRect(vx + 10, 14, vw - 20, 14);
+    g.fillStyle = '#2a3869'; g.fillRect(cx0 + 20, 14, cw - 40, 14);
+
+    g.fillStyle = 'rgba(232,236,255,.8)'; g.font = '11px system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText('Núcleo del reactor', cx0 + cw / 2, cy0 + ch + 18);
 
     // Contorno de la vasija (parpadea en rojo si hay peligro)
     const danger = T >= Sim.warnTemp(sim.diff);
     g.lineWidth = 5;
-    g.strokeStyle = danger ? (Math.floor(time * 4) % 2 === 0 ? '#ff4a1c' : '#ffd60a') : '#8fc22a';
+    g.strokeStyle = danger && Math.floor(time * 4) % 2 === 0 ? '#ff4d6d' : '#5c6fb3';
     roundRect(g, vx, vy, vw, vh, 18); g.stroke();
 
     // Avisos sobre el dibujo
-    g.textAlign = 'left'; g.font = 'bold 14px system-ui, sans-serif';
+    g.textAlign = 'left'; g.font = 'bold 13px system-ui, sans-serif';
     if (sim.leak > 0) {
-      g.fillStyle = '#ff4a1c';
-      const dy = (time * 90) % 50;
-      g.beginPath(); g.arc(95, 300 + dy, 4, 0, Math.PI * 2); g.fill();
-      if (Math.floor(time * 3) % 2 === 0) g.fillText('💧 FUGA', 20, 300);
+      g.fillStyle = '#ff4d6d';
+      const dy = (time * 60) % 18;
+      g.beginPath(); g.arc(pumpX + 2, pumpY + 12 + dy * 0.5, 3.5, 0, Math.PI * 2); g.fill();
+      if (Math.floor(time * 3) % 2 === 0) g.fillText('💧 FUGA', 4, 292);
     }
-    if (sim.burst > 0 && Math.floor(time * 3) % 2 === 0) { g.fillStyle = '#ffd60a'; g.fillText('⚡ PICO', 20, 100); }
+    if (sim.burst > 0 && Math.floor(time * 3) % 2 === 0) { g.fillStyle = '#ffc13d'; g.fillText('⚡ PICO', 300, 90); }
     if (sim.status === 'meltdown') {
       g.fillStyle = `rgba(255,40,60,${0.25 + 0.2 * Math.sin(time * 14)})`; g.fillRect(0, 0, CW, CH);
     }
@@ -236,16 +280,16 @@
     const xOf = (t) => x0 + ((t - tStart) / win) * w;
 
     h.clearRect(0, 0, HW, HH);
-    h.fillStyle = '#0a1006'; h.fillRect(0, 0, HW, HH);
-    h.fillStyle = 'rgba(184,255,46,.12)';
+    h.fillStyle = '#0d142b'; h.fillRect(0, 0, HW, HH);
+    h.fillStyle = 'rgba(61,255,154,.12)';
     h.fillRect(x0, yT(d.bandT[1]), w, yT(d.bandT[0]) - yT(d.bandT[1]));
 
-    h.font = '10px system-ui, sans-serif'; h.textAlign = 'right'; h.fillStyle = '#7b9460'; h.strokeStyle = '#22340f'; h.lineWidth = 1;
+    h.font = '10px system-ui, sans-serif'; h.textAlign = 'right'; h.fillStyle = '#6b78a8'; h.strokeStyle = '#1d2a55'; h.lineWidth = 1;
     for (let v = 0; v <= 400; v += 100) {
       h.beginPath(); h.moveTo(x0, yT(v)); h.lineTo(x0 + w, yT(v)); h.stroke();
       h.fillText(v + '°', x0 - 4, yT(v) + 3);
     }
-    h.setLineDash([4, 4]); h.strokeStyle = '#ff4a1c'; h.beginPath();
+    h.setLineDash([4, 4]); h.strokeStyle = '#ff4d6d'; h.beginPath();
     h.moveTo(x0, yT(Sim.MELTDOWN_T)); h.lineTo(x0 + w, yT(Sim.MELTDOWN_T)); h.stroke(); h.setLineDash([]);
 
     const line = (key, y, color, dash) => {
@@ -257,14 +301,14 @@
       }
       h.setLineDash(dash || []); h.strokeStyle = color; h.lineWidth = 2; h.stroke(); h.setLineDash([]);
     };
-    line('demand', yP, 'rgba(198,255,61,.55)', [5, 4]);
-    line('P', yP, '#c6ff3d');
-    line('T', yT, '#ff9d00');
+    line('demand', yP, 'rgba(56,225,255,.55)', [5, 4]);
+    line('P', yP, '#38e1ff');
+    line('T', yT, '#ff9a3d');
 
     h.textAlign = 'left'; h.font = '11px system-ui, sans-serif';
-    h.fillStyle = '#ff9d00'; h.fillText('— Temperatura (°C)', x0 + 6, HH - 5);
-    h.fillStyle = '#c6ff3d'; h.fillText('— Potencia (%)', x0 + 130, HH - 5);
-    h.fillStyle = 'rgba(198,255,61,.8)'; h.fillText('- - Lo que pide la red', x0 + 230, HH - 5);
+    h.fillStyle = '#ff9a3d'; h.fillText('— Temperatura (°C)', x0 + 6, HH - 5);
+    h.fillStyle = '#38e1ff'; h.fillText('— Potencia (%)', x0 + 130, HH - 5);
+    h.fillStyle = 'rgba(56,225,255,.75)'; h.fillText('- - Lo que pide la red', x0 + 230, HH - 5);
   }
 
   /* ---------- Bucle principal ---------- */

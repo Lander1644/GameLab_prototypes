@@ -5,8 +5,12 @@
  * facing:   hacia dónde mira el robot al empezar (N, E, S, W)
  * allow:    bloques disponibles en el nivel (F, L, R, X, FOR, WHILE)
  * max:      máximo de bloques (cuentan también los bucles)
- * solution: solución de referencia (par = sus bloques). Sintaxis:
- *           F L R X   |   4[F] = repetir 4 veces   |   ?free[F] = mientras camino libre
+ * solution: el algoritmo de referencia (el que se le ocurriría a un buen jugador). Sus bloques son el "par":
+ *           3 estrellas = igual o menos bloques que el par; 2 = hasta 1,5 veces el par; 1 = el resto.
+ *           El par NO es el mínimo absoluto: algunos niveles tienen atajos raros (ver «tricks») y no deben exigirse.
+ * alts:     otras soluciones naturales válidas (las revisa tools/test-robot2.js: deben dar 2 o 3 estrellas)
+ * tricks:   atajos que aprovechan que el juego termina al llegar a la meta; ganan, pero no se piden
+ * Sintaxis: F L R X   |   4[F] = repetir 4 veces   |   ?free[F] = mientras camino libre
  *           condiciones: free, rock, wall, notgoal
  * Para agregar un nivel: añade un objeto aquí y corre  node tools/test-robot2.js
  */
@@ -33,7 +37,9 @@
       hint: 'Ahora puedes girar. Recuerda: el robot gira sobre su sitio y luego avanza hacia donde mira.',
       learn: 'El orden importa: girar antes o después de avanzar lleva al robot a lugares distintos.',
       facing: 'E', max: 6, allow: ['F', 'L', 'R', 'FOR'],
-      solution: '2[3[F] R]',
+      solution: '3[F] R 2[F]',
+      alts: ['F F F R F F'],
+      tricks: ['2[3[F] R]'],
       map: [
         '######',
         '#R...#',
@@ -47,7 +53,9 @@
       hint: 'Las rocas 🪨 bloquean el paso. Usa «Romper» cuando tengas una roca justo enfrente.',
       learn: 'Romper elimina la roca que hay delante. Si no hay nada que romper, el bloque no hace nada.',
       facing: 'E', max: 8, allow: ['F', 'L', 'R', 'X', 'FOR'],
-      solution: '2[F X F R]',
+      solution: 'F X F R 2[F]',
+      alts: ['F X F R F F'],
+      tricks: ['2[F X F R]'],
       map: [
         '#####',
         '#R.X#',
@@ -61,7 +69,9 @@
       hint: 'Los muros grises son de acero: ¡esos no se pueden romper! Busca el camino donde solo haya rocas.',
       learn: 'Un buen programador conoce los límites: unos obstáculos se rompen y otros hay que rodearlos.',
       facing: 'S', max: 11, allow: ['F', 'L', 'R', 'X', 'FOR'],
-      solution: '3[F F L X]',
+      solution: '2[F] L X 2[F] L 2[F]',
+      alts: ['F F L X F F L F F'],
+      tricks: ['3[F F L X]'],
       map: [
         '#####',
         '#R#G#',
@@ -76,6 +86,7 @@
       learn: 'Un bucle «mientras» (while) repite hasta que la condición deja de cumplirse: no necesitas contar los pasos.',
       facing: 'E', max: 3, allow: ALL,
       solution: '?free[F]',
+      alts: ['?notgoal[F]'],
       map: [
         '##############',
         '#R..........G#',
@@ -100,6 +111,7 @@
       learn: 'Encontrar el patrón que se repite es la clave para escribir programas cortos.',
       facing: 'E', max: 8, allow: ALL,
       solution: '3[X F R F L]',
+      alts: ['?notgoal[X F R F L]'],
       map: [
         '#######',
         '#RX####',

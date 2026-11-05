@@ -3,7 +3,8 @@
  *       node tools/test-robot2.js --deep   (busca soluciones más cortas hasta 6 bloques; tarda más)
  * Para cada nivel comprueba que:
  *   1. la solución de referencia gana, cabe en el límite de bloques y solo usa bloques permitidos,
- *   2. no existe una solución más corta que el "par" (búsqueda exhaustiva con los bloques permitidos).
+ *   2. las alternativas naturales («alts») y los atajos («tricks») ganan y puntúan bien;
+ *      además se informa si existe algo más corto que el par (solo informativo).
  * Además prueba las reglas: romper, muros de acero, "mientras" infinito, etc.
  */
 'use strict';
@@ -62,7 +63,19 @@ LEVELS.forEach((lv, i) => {
   const bad = [...usedTypes(program, new Set())].filter((t) => !lv.allow.includes(t));
   check(label + ': usa solo bloques permitidos', bad.length === 0, bad.join(','));
 
-  if (blocks - 1 < 1) { check(label + ': no existe solución más corta que el par', true, 'par ' + blocks); return; }
+  // Alternativas naturales: deben ganar, caber en el límite y dar al menos 2 estrellas
+  for (const alt of lv.alts || []) {
+    const pa = Logic.parseProgram(alt), n = Logic.countBlocks(pa), st = Logic.starsFor(n, blocks);
+    check(label + ': alternativa «' + alt + '» gana', Logic.run(lv, pa).status === 'win' && n <= lv.max, n + ' bloques → ' + st + ' estrellas');
+    check(label + ': alternativa «' + alt + '» da 2-3 estrellas', st >= 2);
+  }
+  // Atajos: ganan y por tanto dan 3 estrellas (usan menos bloques que el par)
+  for (const t of lv.tricks || []) {
+    const pt = Logic.parseProgram(t), n = Logic.countBlocks(pt);
+    check(label + ': atajo «' + t + '» gana y da 3 estrellas', Logic.run(lv, pt).status === 'win' && Logic.starsFor(n, blocks) === 3, n + ' bloques');
+  }
+
+  // Informativo: ¿hay algo más corto que la referencia? (no es un error; solo se avisa)
   const cap = Math.min(blocks - 1, SEARCH_CAP);
   let shorter = null;
   for (let k = 1; k <= cap && !shorter; k++) {
@@ -70,9 +83,10 @@ LEVELS.forEach((lv, i) => {
       if (Logic.run(lv, p).status === 'win') { shorter = { k: k, p: p }; break; }
     }
   }
-  if (shorter) check(label + ': no existe solución más corta que el par', false, 'hay una de ' + shorter.k + ' bloques: ' + JSON.stringify(shorter.p));
-  else if (blocks - 1 > SEARCH_CAP) console.log('      (par de ' + blocks + ' bloques: se comprobó que no hay solución de hasta ' + SEARCH_CAP + ' bloques)');
-  else check(label + ': no existe solución más corta que el par', true, 'par ' + blocks);
+  if (shorter) console.log('      ℹ hay una solución más corta (' + shorter.k + ' bloques, ya da 3 estrellas): ' + JSON.stringify(shorter.p));
+  else console.log('      ℹ no hay nada más corto que el par (' + blocks + ') en la búsqueda de hasta ' + SEARCH_CAP + ' bloques');
 });
+
+check('estrellas: igual al par = 3, hasta 1,5×par = 2, más = 1', Logic.starsFor(5, 5) === 3 && Logic.starsFor(8, 5) === 2 && Logic.starsFor(9, 5) === 1);
 
 process.exit(failures ? 1 : 0);

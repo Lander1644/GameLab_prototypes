@@ -369,7 +369,9 @@
         color: ['#38e1ff', '#3dff9a', '#ffc13d', '#ff4d6d', '#a855f7'][i % 5], r: 4 + Math.random() * 4 });
     }
     $('winStars').innerHTML = '★'.repeat(n) + '<span class="off">' + '★'.repeat(3 - n) + '</span>';
-    $('winBlocks').textContent = 'Usaste ' + used + ' bloques' + (n === 3 ? ': ¡el mínimo posible!' : '. Se puede con ' + par + '. ¿Te animas a intentarlo con menos?');
+    $('winBlocks').textContent = 'Usaste ' + used + ' bloques' + (n < 3
+      ? '. La solución de referencia usa ' + par + '. ¿Te animas a intentarlo con menos?'
+      : used < par ? ': ¡mejor que la solución de referencia (' + par + ')!' : ': ¡igual que la solución de referencia!');
     const last = li === LEVELS.length - 1;
     $('winLearn').textContent = '💡 ' + level.learn + (last ? ' ¡Completaste todos los niveles!' : '');
     $('next').style.display = last ? 'none' : '';
