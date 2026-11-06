@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duelo de Química Aplicada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- 1. PANTALLA INICIAL -->
+  <section id="pantalla-inicio" class="pantalla activa">
+    <div class="tarjeta centrada">
+      <div class="logo" aria-hidden="true">⚗️</div>
+      <h1>Duelo de Química Aplicada</h1>
+      <p class="subtitulo">Dos jugadores, diez preguntas y un solo ganador.<br>¿Quién domina mejor la química?</p>
+      <button id="btn-comenzar" class="boton boton-grande" type="button">Comenzar</button>
+    </div>
+  </section>
+
+  <!-- 2. INSTRUCCIONES -->
+  <section id="pantalla-instrucciones" class="pantalla">
+    <div class="tarjeta">
+      <h2>¿Cómo se juega?</h2>
+      <ol class="reglas">
+        <li>Se lanzan <strong>10 preguntas</strong>. Primero hay <strong>15 segundos</strong> para leerla; las teclas aún no funcionan.</li>
+        <li>Luego hay <strong>10 segundos</strong> para presionar tu tecla: <kbd>A</kbd> para el Jugador 1 y <kbd>L</kbd> para el Jugador 2. <strong>El primero en pulsar</strong> se gana el derecho a responder.</li>
+        <li>Quien pulsó primero tiene <strong>10 segundos</strong> para elegir una opción <strong>con el mouse</strong>.</li>
+        <li>Si falla o se le acaba el tiempo, su rival puede <strong>robar la pregunta</strong>: presiona su tecla y responde también en 10 segundos.</li>
+        <li>Si nadie pulsa a tiempo, la pregunta se pierde sin puntos.</li>
+        <li>Si al final hay empate, se juegan preguntas de <strong>desempate</strong> hasta que alguien acierte.</li>
+      </ol>
+      <table class="tabla-puntos">
+        <thead><tr><th>Situación</th><th>Puntos</th></tr></thead>
+        <tbody>
+          <tr><td>Primer jugador responde correctamente</td><td>+1</td></tr>
+          <tr><td>Primer jugador responde incorrectamente</td><td>0</td></tr>
+          <tr><td>El rival roba y responde correctamente</td><td>+2</td></tr>
+          <tr><td>El rival responde incorrectamente</td><td>0</td></tr>
+          <tr><td>Nadie responde</td><td>0</td></tr>
+        </tbody>
+      </table>
+      <div class="acciones">
+        <button id="btn-instrucciones-volver" class="boton boton-secundario" type="button">Volver</button>
+        <button id="btn-instrucciones-continuar" class="boton" type="button">Continuar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. REGISTRO DE JUGADORES -->
+  <section id="pantalla-registro" class="pantalla">
+    <form id="form-registro" class="tarjeta" autocomplete="off" novalidate>
+      <h2>Registro de jugadores</h2>
+      <div class="campos-registro">
+        <label class="campo campo-0">
+          <span>Jugador 1 — tecla <kbd>A</kbd></span>
+          <input id="nombre-jugador-1" type="text" maxlength="16" placeholder="Nombre del Jugador 1">
+        </label>
+        <label class="campo campo-1">
+          <span>Jugador 2 — tecla <kbd>L</kbd></span>
+          <input id="nombre-jugador-2" type="text" maxlength="16" placeholder="Nombre del Jugador 2">
+        </label>
+      </div>
+      <p id="registro-error" class="error-formulario" role="alert"></p>
+      <div class="acciones">
+        <button id="btn-registro-volver" class="boton boton-secundario" type="button">Volver</button>
+        <button class="boton" type="submit">¡A jugar!</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 4. PANTALLA DE JUEGO -->
+  <section id="pantalla-juego" class="pantalla">
+    <header class="marcador">
+      <div id="jugador-0" class="jugador jugador-0">
+        <div class="jugador-nombre" id="nombre-0">Jugador 1</div>
+        <div class="jugador-tecla">Tecla <kbd>A</kbd></div>
+        <div class="jugador-puntos" id="puntos-0">0</div>
+        <div class="jugador-estado" id="estado-0"></div>
+      </div>
+
+      <div class="centro-marcador">
+        <div id="etiqueta-ronda" class="etiqueta-ronda">Pregunta 1 de 10</div>
+        <div id="insignia-desempate" class="insignia-desempate" hidden>⚡ DESEMPATE ⚡</div>
+        <button id="btn-cancelar-partida" class="boton-mini" type="button">Cancelar partida</button>
+      </div>
+
+      <div id="jugador-1" class="jugador jugador-1">
+        <div class="jugador-nombre" id="nombre-1">Jugador 2</div>
+        <div class="jugador-tecla">Tecla <kbd>L</kbd></div>
+        <div class="jugador-puntos" id="puntos-1">0</div>
+        <div class="jugador-estado" id="estado-1"></div>
+      </div>
+    </header>
+
+    <div id="zona-temporizador" class="zona-temporizador">
+      <div id="temporizador-etiqueta" class="temporizador-etiqueta"></div>
+      <div id="temporizador-numero" class="temporizador-numero">–</div>
+      <div class="barra"><div id="barra-progreso" class="barra-progreso"></div></div>
+    </div>
+
+    <h2 id="enunciado" class="enunciado"></h2>
+    <div id="mensaje" class="mensaje mensaje-info" role="status" aria-live="polite"></div>
+    <div id="opciones" class="opciones"></div>
+  </section>
+
+  <!-- 5. PANTALLA DE DESEMPATE -->
+  <section id="pantalla-desempate" class="pantalla">
+    <div class="tarjeta centrada">
+      <div class="logo" aria-hidden="true">⚡</div>
+      <h1 id="desempate-titulo">¡EMPATE!</h1>
+      <p id="desempate-marcador" class="marcador-texto"></p>
+      <p id="desempate-texto" class="subtitulo"></p>
+      <button id="btn-iniciar-desempate" class="boton boton-grande" type="button">Comenzar desempate</button>
+    </div>
+  </section>
+
+  <!-- 6. PANTALLA FINAL -->
+  <section id="pantalla-final" class="pantalla">
+    <div class="tarjeta centrada">
+      <div class="logo" aria-hidden="true">🏆</div>
+      <p class="subtitulo">¡El ganador es!</p>
+      <h1 id="final-ganador" class="ganador-nombre"></h1>
+      <p id="final-detalle" class="subtitulo"></p>
+      <div class="final-marcador">
+        <div id="final-jugador-0" class="final-jugador final-0">
+          <div id="final-nombre-0" class="final-nombre"></div>
+          <div id="final-puntos-0" class="final-puntos"></div>
+        </div>
+        <div id="final-jugador-1" class="final-jugador final-1">
+          <div id="final-nombre-1" class="final-nombre"></div>
+          <div id="final-puntos-1" class="final-puntos"></div>
+        </div>
+      </div>
+      <p id="final-mensaje" class="subtitulo"></p>
+      <button id="btn-jugar-de-nuevo" class="boton boton-grande" type="button">Volver a jugar</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Orden de carga: cada archivo solo usa lo que ya se cargó antes (o lo busca al ejecutarse). -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/bank.js"></script>
+<script src="js/state.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/players.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/timers.js"></script>
+<script src="js/buzzers.js"></script>
+<script src="js/answers.js"></script>
+<script src="js/game.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
