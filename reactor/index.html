@@ -60,6 +60,92 @@
     </section>
   </main>
 
+  <!-- Consola de protocolo de emergencia: se abre y se cierra; las palancas siguen funcionando -->
+  <button class="console-toggle" id="consoleToggle" aria-expanded="false" aria-controls="console">
+    🛟 Protocolo de emergencia <kbd>T</kbd>
+  </button>
+
+  <section class="console" id="console" aria-label="Terminal y guía de protocolo de emergencia" aria-hidden="true">
+    <header class="console-bar">
+      <b>🛟 Sala de control</b>
+      <small>Opera el reactor con comandos siguiendo la guía, o sigue usando las palancas de arriba.</small>
+      <button class="console-close" id="consoleClose" title="Cerrar (Esc)">Cerrar ✕</button>
+    </header>
+
+    <div class="console-body">
+      <!-- Guía de protocolo: procedimientos listos para cargar en la terminal -->
+      <div class="cpane guide" id="paneGuide" aria-label="Guía de protocolo de emergencia">
+        <p class="guide-intro">Un operador real no improvisa: sigue procedimientos. Elige la situación, pulsa <b>Cargar ▸</b> y luego <b>Ejecutar</b>.</p>
+
+        <article class="proto">
+          <h3>🔼 La red pide más potencia</h3>
+          <p>Saca barras poco a poco hasta que la potencia alcance la demanda.</p>
+          <pre class="proto-cmds">barras 30
+esperar 3
+estado</pre>
+          <button class="btn load" data-cmds="barras 30; esperar 3; estado">Cargar ▸</button>
+        </article>
+
+        <article class="proto">
+          <h3>🔽 La red pide menos potencia</h3>
+          <p>Inserta barras para bajar la potencia sin que el núcleo se enfríe de más.</p>
+          <pre class="proto-cmds">barras 65
+esperar 3
+estado</pre>
+          <button class="btn load" data-cmds="barras 65; esperar 3; estado">Cargar ▸</button>
+        </article>
+
+        <article class="proto warn">
+          <h3>💧 Fuga de refrigerante</h3>
+          <p>La bomba pierde fuerza unos segundos. Súbela al máximo y baja un poco la potencia.</p>
+          <pre class="proto-cmds">bomba 100
+barras 55
+esperar 4
+estado</pre>
+          <button class="btn load" data-cmds="bomba 100; barras 55; esperar 4; estado">Cargar ▸</button>
+        </article>
+
+        <article class="proto warn">
+          <h3>⚡ Pico de reactividad</h3>
+          <p>La potencia sube sola. Inserta barras y refuerza el enfriamiento hasta que pase.</p>
+          <pre class="proto-cmds">barras 70
+bomba 90
+esperar 3
+estado</pre>
+          <button class="btn load" data-cmds="barras 70; bomba 90; esperar 3; estado">Cargar ▸</button>
+        </article>
+
+        <article class="proto bad">
+          <h3>🌡 Sobrecalentamiento</h3>
+          <p>Si la temperatura entra en rojo: enfría al máximo y frena la reacción. Si no baja, ejecuta <b>scram</b>.</p>
+          <pre class="proto-cmds">bomba 100
+barras 85
+esperar 5
+estado</pre>
+          <button class="btn load" data-cmds="bomba 100; barras 85; esperar 5; estado">Cargar ▸</button>
+        </article>
+
+        <article class="proto bad">
+          <h3>⛔ Apagado de emergencia</h3>
+          <p>Último recurso: detiene la reacción de golpe. Es seguro, pero la red se queda sin energía.</p>
+          <pre class="proto-cmds">scram</pre>
+          <button class="btn load" data-cmds="scram">Cargar ▸</button>
+        </article>
+      </div>
+
+      <!-- Terminal -->
+      <div class="cpane term" id="paneTerm">
+        <div class="term-out" id="termOut" aria-live="polite"></div>
+        <form class="term-input" id="termForm" autocomplete="off">
+          <span class="term-prompt">⚛</span>
+          <input id="termInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 placeholder="escribe un comando y pulsa Enter — «ayuda» para la lista" aria-label="Comando del reactor">
+          <button class="btn primary" type="submit">Ejecutar</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <div class="overlay" id="startOverlay">
     <div class="card">
       <h2>☢ Estabiliza el reactor</h2>
@@ -69,6 +155,7 @@
         <li>Ajusta la <b>bomba de refrigerante</b> para mantener la <b>temperatura</b> en la zona verde.</li>
         <li>Vigila los avisos: habrá <b>fugas</b>, <b>picos</b> y cambios de demanda.</li>
       </ol>
+      <p>Novedad: también puedes operar como un profesional desde la <b>🛟 terminal de protocolo</b> (botón abajo a la derecha o tecla <kbd>T</kbd>), ejecutando comandos según una guía.</p>
       <p>Elige la dificultad para empezar:</p>
       <div class="row">
         <button class="btn primary big" data-diff="facil">Fácil · 1 min</button>
@@ -94,6 +181,7 @@
   </div>
 
   <script src="sim.js"></script>
+  <script src="commands.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

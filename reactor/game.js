@@ -1,8 +1,10 @@
 /* Interfaz del juego "Estabiliza el reactor": dibujo, controles y avisos.
- * La física vive en sim.js (se puede probar con Node sin navegador). */
+ * La física vive en sim.js y los comandos de la terminal en commands.js
+ * (ambos se pueden probar con Node sin navegador). */
 (() => {
   'use strict';
   const Sim = window.ReactorSim;
+  const Cmd = window.ReactorCommands;
   const $ = (id) => document.getElementById(id);
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -18,6 +20,7 @@
     'El xenón-135 es un "veneno" de neutrones: se acumula mientras el reactor trabaja y hace más lento cambiar la potencia.',
     'SCRAM es el apagado de emergencia: se insertan todas las barras de control de golpe.',
     'El agua del reactor enfría el núcleo y además frena (modera) los neutrones para que provoquen nuevas fisiones.',
+    'Los operadores reales no improvisan: siguen procedimientos escritos paso a paso, como los de la guía de la terminal.',
     'Aquí el tiempo va comprimido: un reactor real reacciona mucho más despacio y tiene varias capas de seguridad.',
   ];
 
@@ -43,6 +46,8 @@
     sim = Sim.create(key);
     active = true; paused = false; acc = 0; histAcc = 0; logSeen = 0; factClock = 0;
     history = []; bubbles = [];
+    queueReset();
+    termReset();
     $('rods').value = sim.rods; $('pump').value = sim.pump;
     $('duration').textContent = fmtTime(sim.diff.duration);
     $('log').innerHTML = '';
@@ -66,6 +71,7 @@
 
   function finish() {
     active = false;
+    queueReset();
     const sm = Sim.summary(sim);
     const e = ENDINGS[sim.status];
     $('endTitle').textContent = e.title;
@@ -311,6 +317,96 @@
     h.fillStyle = 'rgba(56,225,255,.75)'; h.fillText('- - Lo que pide la red', x0 + 230, HH - 5);
   }
 
+  /* ---------- Terminal de protocolo de emergencia ---------- */
+
+  let consoleOpen = false, cmdQueue = [], cmdWaitUntil = 0;
+  let cmdHist = [], histPos = 0;
+  const termOut = $('termOut'), termInput = $('termInput'), consoleEl = $('console'), toggleBtn = $('consoleToggle');
+
+  function termLine(text, cls) {
+    const div = document.createElement('div');
+    div.className = 'line ' + (cls || 'muted');
+    div.textContent = text;
+    termOut.appendChild(div);
+    termOut.scrollTop = termOut.scrollHeight;
+  }
+
+  function termReset() {
+    termOut.innerHTML = '';
+    termLine('Sala de control lista. Escribe «ayuda» o pulsa «Cargar ▸» en un protocolo de la guía.', 'muted');
+  }
+
+  function queueReset() { cmdQueue = []; cmdWaitUntil = 0; }
+
+  function runMeta(cmd) {
+    if (cmd.name === 'estado') termLine(Cmd.stateLine(sim), 'muted');
+    else if (cmd.name === 'ayuda') { termLine('Comandos:', 'muted'); for (const c of Cmd.COMMANDS) termLine('  ' + c.help, 'muted'); }
+    else if (cmd.name === 'limpiar') termOut.innerHTML = '';
+  }
+
+  // Procesa la cola en sincronía con el tiempo simulado: "esperar" pausa; lo demás se ejecuta en orden
+  function pumpQueue() {
+    while (cmdQueue.length) {
+      if (sim.t < cmdWaitUntil) return;
+      const step = cmdQueue[0];
+      if (step.cmd.kind === 'wait') {
+        cmdQueue.shift();
+        cmdWaitUntil = sim.t + step.value;
+        termLine('⏳ esperar ' + step.value + ' s…', 'muted');
+        return;
+      }
+      cmdQueue.shift();
+      if (step.cmd.kind === 'meta') { runMeta(step.cmd); continue; }   // estado/ayuda/limpiar: sin coste de tiempo
+      const r = Cmd.apply(Sim, sim, step);
+      termLine((r.ok ? '› ' : '✕ ') + r.text, r.ok ? 'ok' : 'bad');
+      $('rods').value = sim.rods; $('pump').value = sim.pump;
+      if (!r.ok) { queueReset(); return; }      // si algo falla (p.ej. reactor apagado), cancela el resto
+    }
+  }
+
+  function submitTerminal() {
+    const text = termInput.value;
+    termInput.value = '';
+    if (!text.trim()) return;
+    cmdHist.push(text); histPos = cmdHist.length;
+
+    const parsed = Cmd.parse(text);
+    if (!parsed.length) return;
+    const steps = [];
+    for (const p of parsed) {
+      termLine(p.raw, 'cmd');
+      if (p.ok) steps.push(p); else termLine('✕ ' + p.error, 'bad');
+    }
+    if (!steps.length) return;
+
+    const needsReactor = steps.some((p) => p.cmd.kind === 'control' || p.cmd.kind === 'wait');
+    if (!active) {
+      // Sin partida en marcha: los comandos meta (ayuda/estado/limpiar) funcionan igual; el resto no
+      if (needsReactor) termLine('✕ El reactor no está en marcha. Empieza una partida primero.', 'bad');
+      for (const p of steps) if (p.cmd.kind === 'meta') runMeta(p.cmd);
+      return;
+    }
+    // En partida: todo (incluido estado) se ejecuta en orden, respetando los "esperar"
+    for (const p of steps) cmdQueue.push(p);
+  }
+
+  function openConsole() {
+    consoleOpen = true;
+    consoleEl.classList.add('open');
+    consoleEl.setAttribute('aria-hidden', 'false');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    toggleBtn.hidden = true;
+    setTimeout(() => termInput.focus(), 60);
+  }
+  function closeConsole() {
+    consoleOpen = false;
+    consoleEl.classList.remove('open');
+    consoleEl.setAttribute('aria-hidden', 'true');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.hidden = false;
+  }
+  function toggleConsole() { consoleOpen ? closeConsole() : openConsole(); }
+
   /* ---------- Bucle principal ---------- */
 
   function frame(now) {
@@ -319,6 +415,7 @@
     if (active && !paused) {
       acc += dt;
       while (acc >= Sim.DT && sim.status === 'running') { Sim.step(sim, Sim.DT); acc -= Sim.DT; histAcc += Sim.DT; }
+      pumpQueue();
       if (histAcc >= 0.25) {
         histAcc = 0;
         history.push({ t: sim.t, T: sim.T, P: sim.P, demand: sim.demand });
@@ -353,7 +450,24 @@
   $('changeDiff').addEventListener('click', () => { $('endOverlay').classList.add('hidden'); $('startOverlay').classList.remove('hidden'); });
   document.querySelectorAll('[data-diff]').forEach((b) => b.addEventListener('click', () => start(b.dataset.diff)));
 
+  // Terminal
+  toggleBtn.addEventListener('click', toggleConsole);
+  $('consoleClose').addEventListener('click', closeConsole);
+  $('termForm').addEventListener('submit', (e) => { e.preventDefault(); submitTerminal(); });
+  document.querySelectorAll('.proto .load').forEach((b) => b.addEventListener('click', () => {
+    termInput.value = b.dataset.cmds;
+    termInput.focus();
+    termLine('(protocolo cargado — revísalo y pulsa «Ejecutar»)', 'muted');
+  }));
+  termInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); if (histPos > 0) { histPos--; termInput.value = cmdHist[histPos] || ''; } }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (histPos < cmdHist.length) { histPos++; termInput.value = cmdHist[histPos] || ''; } }
+  });
+
   document.addEventListener('keydown', (e) => {
+    if (e.target === termInput) { if (e.key === 'Escape') { closeConsole(); } return; }  // dentro de la terminal, escribe libre
+    if (e.key === 'Escape' && consoleOpen) { closeConsole(); return; }
+    if (e.key === 't' || e.key === 'T') { toggleConsole(); return; }
     const k = e.key;
     if (k === 'p' || k === 'P') { togglePause(); return; }
     if (!active || paused) return;
@@ -364,6 +478,7 @@
   });
 
   setZones();
+  termReset();
   $('duration').textContent = fmtTime(sim.diff.duration);
   showFact();
   requestAnimationFrame(frame);

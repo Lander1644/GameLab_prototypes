@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Programa al robot (Python)</title>
+  <link rel="stylesheet" href="../shared/style.css">
+  <link rel="stylesheet" href="robot_py.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">← Menú</a>
+    <h1>🐍 Programa al robot <small class="subt">· Python</small></h1>
+    <div class="topstats">
+      <span id="levelTag">Nivel 1</span>
+      <span class="stars" id="levelStars"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Izquierda: mapa + consola -->
+    <section class="viz">
+      <div class="level-head">
+        <button class="navbtn" id="prevLvl" title="Nivel anterior">◀</button>
+        <div class="level-info">
+          <b id="lvlName">—</b>
+          <small id="lvlGoal"></small>
+        </div>
+        <button class="navbtn" id="nextLvl" title="Siguiente nivel">▶</button>
+      </div>
+      <canvas id="board" width="600" height="400" role="img"
+              aria-label="Mapa del robot con rocas, muros y la meta"></canvas>
+      <p class="learn-tip" id="learnTip"></p>
+      <div class="console" id="console" aria-live="polite" aria-label="Salida del programa"></div>
+    </section>
+
+    <!-- Derecha: editor de código Python -->
+    <section class="panel editor-panel">
+      <div class="editor-head">
+        <span class="file">robot.py</span>
+        <button class="linklike" id="resetCode" title="Volver al código inicial del nivel">↺ código base</button>
+      </div>
+      <div class="editor-wrap">
+        <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"
+                  aria-label="Editor de código Python"></textarea>
+      </div>
+      <div class="run-row">
+        <button class="btn primary big" id="run">▶ Ejecutar</button>
+        <button class="btn big" id="stop" disabled>⏹ Detener</button>
+        <button class="btn big" id="reset">↺ Reiniciar robot</button>
+      </div>
+
+      <details class="ref" open>
+        <summary>📖 Funciones que puedes usar</summary>
+        <ul class="apiref">
+          <li><code>avanzar()</code> — da un paso adelante</li>
+          <li><code>girar_izquierda()</code> / <code>girar_derecha()</code> — gira sobre su sitio</li>
+          <li><code>romper()</code> — rompe la roca que haya delante (el acero no)</li>
+          <li><code>camino_libre()</code> — <i>True</i> si no hay nada delante</li>
+          <li><code>hay_roca()</code> · <code>hay_pared()</code> — <i>True</i> según lo que haya delante</li>
+          <li><code>en_meta()</code> — <i>True</i> si el robot ya está en la meta</li>
+        </ul>
+        <pre class="apiex"># Repetir con for
+for i in range(4):
+    avanzar()
+
+# Repetir con while hasta una condición
+while not en_meta():
+    if hay_roca():
+        romper()
+    avanzar()</pre>
+      </details>
+    </section>
+  </main>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>🐍 Programa al robot <small>· Python</small></h2>
+      <p>Esta versión se programa escribiendo <b>Python de verdad</b>. Escribe instrucciones en el editor y pulsa <b>Ejecutar</b> para que el robot las obedezca y llegue a la meta.</p>
+      <ul>
+        <li>Usa <code>avanzar()</code>, <code>girar_izquierda()</code>, <code>girar_derecha()</code> y <code>romper()</code>.</li>
+        <li>Repite con <code>for</code> y <code>while</code>; decide con <code>if</code> usando los sensores.</li>
+        <li>Cuantas menos líneas uses, más <b>estrellas</b> ganas.</li>
+      </ul>
+      <div class="row">
+        <button class="btn primary big" id="begin">Empezar</button>
+        <a class="btn big" href="../index.html" style="text-decoration:none">Menú</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="winOverlay">
+    <div class="card">
+      <h2 id="winTitle">¡Nivel resuelto!</h2>
+      <div class="stars big" id="winStars"></div>
+      <p id="winText"></p>
+      <div class="row">
+        <button class="btn primary big" id="winNext">Siguiente nivel →</button>
+        <button class="btn big" id="winAgain">Mejorar mi código</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="sim.js"></script>
+  <script src="levels.js"></script>
+  <!-- Skulpt (Python en el navegador), vendorizado en lib/ para funcionar sin internet -->
+  <script src="lib/skulpt.min.js"></script>
+  <script src="lib/skulpt-stdlib.js"></script>
+  <!-- runner.js conecta Skulpt con el juego (contrato en INTERPRETE_PROMPT.md) -->
+  <script src="runner.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
