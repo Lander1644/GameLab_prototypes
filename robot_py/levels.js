@@ -1,15 +1,19 @@
 /* Niveles de "Programa al robot (Python)".
  *
  * Mapa:  #  muro de acero (NO se rompe)   X  roca (se rompe)   .  piso
- *        R  robot (inicio)   G  meta   B  batería
- * facing:  N, E, S, W   (hacia dónde mira el robot al empezar)
- * start:   código Python que aparece ya escrito en el editor al abrir el nivel
- * par:     nº de líneas de código de la solución de referencia (para las estrellas:
- *          3★ = igual o menos; 2★ = hasta 1,5×; 1★ = el resto). Cuentan las líneas con
- *          código (se ignoran las vacías y los comentarios).
+ *        R  robot (inicio)   G  meta   B  batería (hay que recogerlas todas antes de la meta)
+ * facing: N, E, S, W   (hacia dónde mira el robot al empezar)
+ * goal:   qué hay que lograr (se muestra bajo el nombre del nivel)
+ * learn:  la idea de programación que enseña el nivel
+ * hint:   pista que se muestra solo si el estudiante la pide (NO es la solución)
+ * par:    nº de líneas de código de la solución de referencia (para las estrellas:
+ *         3★ = igual o menos; 2★ = hasta 1,5×; 1★ = el resto). Solo cuentan las líneas con
+ *         código (se ignoran las vacías y los comentarios).
  *
- * Para agregar un nivel: añade un objeto aquí y, si quieres validarlo, una solución de
- * referencia en tools/test-robot_py.js.
+ * El editor empieza vacío en todos los niveles: el estudiante escribe su propio programa.
+ * Las soluciones de referencia están en tools/test-robot_py.js (no en el juego).
+ * Para agregar un nivel: añade un objeto aquí y su solución en el test, y corre
+ *   node tools/test-robot_py.js
  */
 (function (root) {
   'use strict';
@@ -17,10 +21,10 @@
   const LEVELS = [
     {
       name: 'Primeros pasos',
-      goal: 'Lleva el robot hasta la meta (G).',
-      learn: 'avanzar() da un paso adelante. Un bucle for repite una acción un número fijo de veces.',
+      goal: 'Lleva el robot hasta la meta ★.',
+      learn: 'avanzar() da un paso adelante. Un bucle for repite instrucciones un número fijo de veces.',
+      hint: 'Cuenta cuántas casillas hay hasta la meta. for i in range(n): repite lo que esté sangrado debajo n veces.',
       facing: 'E', par: 2,
-      start: '# Lleva el robot a la meta.\n# avanzar() da un paso adelante.\nfor i in range(6):\n    avanzar()\n',
       map: [
         '#########',
         '#R.....G#',
@@ -29,10 +33,10 @@
     },
     {
       name: 'Giros',
-      goal: 'Gira para doblar la esquina.',
-      learn: 'girar_derecha() y girar_izquierda() hacen girar al robot sobre su sitio. Luego avanza hacia donde mira.',
+      goal: 'Dobla la esquina para llegar a la meta.',
+      learn: 'girar_derecha() y girar_izquierda() hacen girar al robot sobre su sitio; después avanza hacia donde mira.',
+      hint: 'Avanza hasta la esquina, gira hacia la meta y vuelve a avanzar. Puedes usar dos bucles for.',
       facing: 'E', par: 5,
-      start: '# Avanza, gira y vuelve a avanzar.\nfor i in range(3):\n    avanzar()\ngirar_derecha()\navanzar()\navanzar()\n',
       map: [
         '######',
         '#R...#',
@@ -42,55 +46,69 @@
       ],
     },
     {
-      name: 'Una roca en el camino',
-      goal: 'Rompe la roca 🪨 que bloquea el paso.',
-      learn: 'romper() destruye la roca que haya justo delante. Si no hay nada, no pasa nada.',
-      facing: 'E', par: 6,
-      start: '# Hay una roca en el camino.\navanzar()\nromper()\navanzar()\ngirar_derecha()\navanzar()\navanzar()\n',
+      name: 'Sigue el pasillo',
+      goal: 'Recorre la espiral sin contar los pasos.',
+      learn: 'if / else decide qué hacer según lo que el robot detecta: si hay pared, gira; si no, avanza.',
+      hint: 'Todas las esquinas giran a la derecha. Dentro de un while not en_meta(): pregunta con if hay_pared(): y usa else para avanzar.',
+      facing: 'E', par: 5,
       map: [
-        '#####',
-        '#R.X#',
-        '###.#',
-        '###G#',
-        '#####',
+        '########',
+        '#R.....#',
+        '######.#',
+        '#...G#.#',
+        '#.####.#',
+        '#......#',
+        '########',
       ],
     },
     {
-      name: 'Muros de acero',
-      goal: 'Los muros grises no se rompen: rodéalos.',
-      learn: 'Unos obstáculos se rompen (rocas) y otros no (acero). Un buen programa distingue los casos.',
-      facing: 'S', par: 9,
-      start: '# El muro del centro es de acero (no se rompe).\n# Baja, gira y rompe solo la roca.\navanzar()\navanzar()\ngirar_izquierda()\nromper()\navanzar()\navanzar()\ngirar_izquierda()\navanzar()\navanzar()\n',
+      name: 'Rocas y esquinas',
+      goal: 'Rompe las rocas, pero cuidado: las esquinas son de acero.',
+      learn: 'elif permite elegir entre varias opciones: roca, pared o camino libre. Solo se ejecuta la primera que se cumple.',
+      hint: 'Si llamas romper() frente al acero, el robot choca. Pregunta primero con if hay_roca():, luego elif hay_pared(): y por último else.',
+      facing: 'E', par: 7,
       map: [
-        '#####',
-        '#R#G#',
-        '#.#.#',
-        '#.X.#',
-        '#####',
+        '##########',
+        '#R.X.X...#',
+        '########.#',
+        '#..X..G#X#',
+        '#.######.#',
+        '#..X..X..#',
+        '##########',
       ],
     },
     {
-      name: 'Mientras haya camino',
-      goal: 'El pasillo es muy largo para contar los pasos.',
-      learn: 'Un bucle while repite MIENTRAS se cumpla una condición. en_meta() es True cuando el robot ya está en la meta.',
-      facing: 'E', par: 2,
-      start: '# No cuentes los pasos: avanza hasta llegar.\nwhile not en_meta():\n    avanzar()\n',
+      name: 'Izquierda o derecha',
+      goal: 'Ahora el pasillo gira hacia ambos lados.',
+      learn: 'Un if puede ir dentro de otro (if anidado). El robot solo ve hacia delante: para elegir lado, gira y vuelve a mirar.',
+      hint: 'Si el camino está libre, avanza. Si no, gira a la derecha; y si ahí también hay pared, date la vuelta (girar_izquierda() dos veces).',
+      facing: 'E', par: 8,
       map: [
-        '##############',
-        '#R..........G#',
-        '##############',
+        '#########',
+        '#R......#',
+        '#######.#',
+        '#.......#',
+        '#.#######',
+        '#......G#',
+        '#########',
       ],
     },
     {
-      name: 'Pasillo de rocas',
-      goal: 'Rocas por todas partes: combínalo todo.',
-      learn: 'romper() delante de una casilla vacía no hace nada, así que puedes ponerlo siempre dentro del while.',
-      facing: 'E', par: 3,
-      start: '# Mientras no llegues a la meta: rompe (si hay roca) y avanza.\nwhile not en_meta():\n    romper()\n    avanzar()\n',
+      name: 'La fábrica',
+      goal: 'Recoge las dos baterías ⚡ y llega a la meta.',
+      learn: 'Combinar if, elif, else y un if anidado dentro de un while resuelve recorridos que nunca habías visto.',
+      hint: 'Junta lo de los dos niveles anteriores: primero revisa si hay roca, luego si el camino está libre y, si no, decide hacia qué lado girar.',
+      facing: 'E', par: 10,
       map: [
-        '##############',
-        '#R.X..XX.X..G#',
-        '##############',
+        '##########',
+        '#R.X..B..#',
+        '########.#',
+        '#..X.....#',
+        '#.########',
+        '#...X.B..#',
+        '########.#',
+        '#G..X....#',
+        '##########',
       ],
     },
   ];

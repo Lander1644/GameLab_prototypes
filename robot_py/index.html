@@ -38,7 +38,10 @@
     <section class="panel editor-panel">
       <div class="editor-head">
         <span class="file">robot.py</span>
-        <button class="linklike" id="resetCode" title="Volver al código inicial del nivel">↺ código base</button>
+        <div class="editor-tools">
+          <button class="linklike" id="hintBtn" title="Muestra una pista en la consola (no la solución)">💡 Pista</button>
+          <button class="linklike" id="resetCode" title="Borra tu código de este nivel">🗑 Limpiar editor</button>
+        </div>
       </div>
       <div class="editor-wrap">
         <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"
@@ -49,26 +52,51 @@
         <button class="btn big" id="stop" disabled>⏹ Detener</button>
         <button class="btn big" id="reset">↺ Reiniciar robot</button>
       </div>
+      <small class="run-tip"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> también ejecuta · <kbd>Tab</kbd> agrega 4 espacios de sangría</small>
 
       <details class="ref" open>
-        <summary>📖 Funciones que puedes usar</summary>
-        <ul class="apiref">
-          <li><code>avanzar()</code> — da un paso adelante</li>
-          <li><code>girar_izquierda()</code> / <code>girar_derecha()</code> — gira sobre su sitio</li>
-          <li><code>romper()</code> — rompe la roca que haya delante (el acero no)</li>
-          <li><code>camino_libre()</code> — <i>True</i> si no hay nada delante</li>
-          <li><code>hay_roca()</code> · <code>hay_pared()</code> — <i>True</i> según lo que haya delante</li>
-          <li><code>en_meta()</code> — <i>True</i> si el robot ya está en la meta</li>
-        </ul>
-        <pre class="apiex"># Repetir con for
-for i in range(4):
+        <summary>📖 Funciones del robot</summary>
+        <div class="ref-cols">
+          <div>
+            <h4>Acciones</h4>
+            <ul class="apiref">
+              <li><code>avanzar()</code> — un paso adelante</li>
+              <li><code>girar_izquierda()</code> — gira sobre su sitio</li>
+              <li><code>girar_derecha()</code> — gira sobre su sitio</li>
+              <li><code>romper()</code> — rompe la roca de delante (el acero no)</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Sensores <small>(True / False)</small></h4>
+            <ul class="apiref">
+              <li><code>camino_libre()</code> — no hay nada delante</li>
+              <li><code>hay_roca()</code> — hay una roca delante</li>
+              <li><code>hay_pared()</code> — hay un muro delante</li>
+              <li><code>en_meta()</code> — el robot está en la meta</li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <details class="ref">
+        <summary>🐍 Recordatorio de Python</summary>
+        <pre class="apiex"><span class="c"># for: repetir un número fijo de veces</span>
+for i in range(3):
     avanzar()
 
-# Repetir con while hasta una condición
+<span class="c"># while: repetir MIENTRAS algo sea cierto</span>
 while not en_meta():
-    if hay_roca():
-        romper()
-    avanzar()</pre>
+    ...
+
+<span class="c"># if / elif / else: decidir según un sensor</span>
+if camino_libre():
+    print("libre")
+elif hay_roca():
+    print("roca")
+else:
+    print("muro")
+
+<span class="c"># la sangría (4 espacios) marca qué va dentro</span></pre>
       </details>
     </section>
   </main>
@@ -79,7 +107,8 @@ while not en_meta():
       <p>Esta versión se programa escribiendo <b>Python de verdad</b>. Escribe instrucciones en el editor y pulsa <b>Ejecutar</b> para que el robot las obedezca y llegue a la meta.</p>
       <ul>
         <li>Usa <code>avanzar()</code>, <code>girar_izquierda()</code>, <code>girar_derecha()</code> y <code>romper()</code>.</li>
-        <li>Repite con <code>for</code> y <code>while</code>; decide con <code>if</code> usando los sensores.</li>
+        <li>Repite con <code>for</code> y <code>while</code>; decide con <code>if</code> / <code>elif</code> / <code>else</code> usando los sensores.</li>
+        <li>El editor empieza vacío: el programa lo escribes tú. Si te atoras, pide una <b>💡 pista</b>.</li>
         <li>Cuantas menos líneas uses, más <b>estrellas</b> ganas.</li>
       </ul>
       <div class="row">

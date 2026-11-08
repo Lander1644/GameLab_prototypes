@@ -106,8 +106,10 @@ funcione **sin internet** y abriendo `index.html` con doble clic (`file://`). No
 4. **Probar**:
    - `node tools/test-robot_py.js` debe seguir pasando (no tocaste `sim.js`).
    - Abre `robot_py/index.html` y comprueba, al menos: el nivel 1 (`for i in range(6): avanzar()`)
-     gana con 3 estrellas; el nivel 5 (`while not en_meta(): avanzar()`) gana; un error de
-     sintaxis se muestra en la consola sin colgar la página; `print("hola")` aparece en la consola.
+     gana con 3 estrellas; el nivel 3 (un `while not en_meta():` con `if hay_pared(): ... else: ...`)
+     gana; un error de sintaxis se muestra en la consola sin colgar la página; `print("hola")`
+     aparece en la consola. (Las soluciones de referencia de todos los niveles están en
+     `tools/test-robot_py.js`.)
 
 5. **No** añadas la tarjeta del menú todavía: hazlo (o pídemelo) una vez que el intérprete
    funcione, para no dejar un acceso roto en la feria.

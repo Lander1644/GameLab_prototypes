@@ -51,6 +51,10 @@
 .editor-head .file { font: 600 .9rem ui-monospace, Consolas, monospace; color: var(--accent); }
 .linklike { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .85rem; text-decoration: underline; }
 .linklike:hover { color: var(--text); }
+.editor-tools { display: flex; gap: 14px; }
+.run-tip { margin-top: -4px; }
+.run-tip kbd { font-size: .75em; }
+.console .hint { color: var(--warn); }
 
 .editor-wrap {
   position: relative;
@@ -69,7 +73,13 @@
 
 .ref { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
 .ref summary { cursor: pointer; font-weight: 600; }
-.ref .apiref { margin: 10px 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: .92rem; }
+.ref + .ref { margin-top: -2px; }
+.ref-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 8px; }
+@media (max-width: 520px) { .ref-cols { grid-template-columns: 1fr; } }
+.ref h4 { margin: 0; font-size: .85rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.ref h4 small { text-transform: none; letter-spacing: 0; }
+.apiex .c { color: #6b78a8; }
+.ref .apiref { margin: 6px 0 4px; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: .92rem; }
 .ref code { background: #070b18; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font: .9em ui-monospace, Consolas, monospace; color: var(--accent); }
 .apiex { margin: 8px 0 2px; padding: 10px 12px; background: #070b18; border-radius: 8px; color: var(--muted); font: .85rem ui-monospace, Consolas, monospace; white-space: pre; overflow-x: auto; }
 

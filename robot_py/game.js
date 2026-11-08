@@ -25,14 +25,19 @@
 
   const cv = $('board'), g = cv.getContext('2d');
   const STORE = 'gamelab.robot_py.stars';
+  const DRAFTS = 'gamelab.robot_py.code';   // lo que cada quien lleva escrito en cada nivel
   const STEP_MS = 180;        // velocidad de la animación
+  const EMPTY = '# Escribe aquí tu programa en Python\n';
 
   let lvlIndex = 0, level = LEVELS[0];
   let view = null, animTimer = null, running = false;
-  let stars = loadStars();
+  let stars = loadJSON(STORE), drafts = loadJSON(DRAFTS);
 
-  function loadStars() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
-  function saveStars() { try { localStorage.setItem(STORE, JSON.stringify(stars)); } catch (e) {} }
+  // El almacenamiento del navegador puede no estar disponible (modo privado, etc.): el juego sigue igual
+  function loadJSON(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+  function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function saveStars() { saveJSON(STORE, stars); }
+  function saveDraft() { drafts[lvlIndex] = $('code').value; saveJSON(DRAFTS, drafts); }
 
   /* ---------- Vista (estado que se dibuja; se reconstruye al reproducir la traza) ---------- */
 
@@ -148,11 +153,11 @@
     $('lvlName').textContent = level.name;
     $('lvlGoal').textContent = level.goal;
     $('learnTip').textContent = level.learn;
-    $('code').value = level.start;
+    $('code').value = drafts[lvlIndex] != null ? drafts[lvlIndex] : EMPTY;
     setStarsEl($('levelStars'), stars[lvlIndex] || 0);
     $('prevLvl').disabled = lvlIndex === 0;
     $('nextLvl').disabled = lvlIndex === LEVELS.length - 1;
-    consoleClear(); consolePrint('Escribe tu programa y pulsa ▶ Ejecutar.', 'sys');
+    consoleClear(); consolePrint('Escribe tu programa y pulsa ▶ Ejecutar. ¿Atorado? Pide una 💡 pista.', 'sys');
     draw();
   }
 
@@ -272,7 +277,9 @@
   $('run').addEventListener('click', runProgram);
   $('stop').addEventListener('click', () => { stopAnim(); setRunning(false); view = freshView(); draw(); consolePrint('⏹ Detenido.', 'sys'); });
   $('reset').addEventListener('click', () => { stopAnim(); setRunning(false); view = freshView(); draw(); consoleClear(); consolePrint('Robot reiniciado.', 'sys'); });
-  $('resetCode').addEventListener('click', () => { $('code').value = level.start; $('code').focus(); });
+  $('resetCode').addEventListener('click', () => { $('code').value = EMPTY; saveDraft(); $('code').focus(); });
+  $('hintBtn').addEventListener('click', () => consolePrint('💡 Pista: ' + level.hint, 'hint'));
+  $('code').addEventListener('input', saveDraft);
   $('prevLvl').addEventListener('click', () => loadLevel(lvlIndex - 1));
   $('nextLvl').addEventListener('click', () => loadLevel(lvlIndex + 1));
   $('begin').addEventListener('click', () => { $('startOverlay').classList.add('hidden'); $('code').focus(); });
@@ -286,6 +293,7 @@
       const t = e.target, s = t.selectionStart, en = t.selectionEnd;
       t.value = t.value.slice(0, s) + '    ' + t.value.slice(en);
       t.selectionStart = t.selectionEnd = s + 4;
+      saveDraft();
     }
     if ((e.key === 'Enter') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runProgram(); }
   });
