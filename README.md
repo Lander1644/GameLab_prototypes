@@ -15,6 +15,7 @@ Pequeños juegos que se ejecutan **localmente en el navegador**, sin instalar na
 |---|---|---|
 | ☢️ Estabiliza el reactor | `reactor/` | Controla barras y refrigerante con las palancas, y responde a las señales (apagón, fuga, pico, calor) con procedimientos en una terminal: `boro`, `desviar_vapor`, `aislar_fuga`, `diesel`, `enfriar_residual`. El SCRAM inicia una fase de enfriamiento hasta parada fría. 3 dificultades. |
 | 🧩 Programa al robot | `robot2/` | Versión con bloques estilo Scratch que se **arrastran y sueltan**: bucles «repetir» (for) y «mientras» (while) con condiciones, y un bloque **«Romper»** para abrirse paso entre rocas (los muros de acero no se rompen). 8 niveles. Las estrellas dependen de cuántos bloques uses frente a la solución de referencia del nivel (3★ = igual o menos; 2★ = hasta 1,5 veces; 1★ = el resto). |
+| 🐍 Programa al robot en Python | `robot_py/` | Misma aventura que el robot de bloques, pero escribiendo **Python real** (`for`, `while`, `if`) en un editor. Funciona sin internet: el intérprete Skulpt viaja en `robot_py/lib/`. 6 niveles. |
 | 🧪 Duelo de Química Aplicada | `quizz_QA/` | Quiz para dos jugadores con pulsadores de teclado (A / L): 10 preguntas de un banco de 30, robo de pregunta y desempate. |
 
 Controles: los juegos se pueden jugar con mouse/táctil; el teclado está explicado dentro de cada juego.
