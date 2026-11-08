@@ -13,7 +13,7 @@
     <h1>☢ Estabiliza el reactor</h1>
     <div class="topstats">
       <span><span id="time">0:00</span> / <span id="duration">1:30</span></span>
-      <span>Estable: <b id="pct">100 %</b></span>
+      <span><span id="pctLabel">Estable:</span> <b id="pct">100 %</b></span>
     </div>
   </header>
 
@@ -26,22 +26,23 @@
     </section>
 
     <section class="panel controls">
+      <div class="cuebar" id="cueBar" aria-live="assertive"></div>
       <div class="meter">
         <div class="meter-head"><span>🌡 Temperatura</span><b id="vTemp">297 °C</b></div>
         <div class="meter-track"><div class="zone" id="zoneT"></div><div class="fill temp" id="fillT"></div></div>
-        <small>Mantenla en la <b>zona verde</b>. Si llega a 420 °C, el núcleo se funde.</small>
+        <small id="tempHint">Mantenla en la <b>zona verde</b>. Si llega a 420 °C, el núcleo se funde.</small>
       </div>
 
       <div class="meter">
         <div class="meter-head"><span>⚡ Potencia</span><b id="vPow">50 %</b></div>
         <div class="meter-track"><div class="zone" id="zoneP"></div><div class="fill pow" id="fillP"></div><div class="marker" id="markDemand"></div></div>
-        <small>La red pide <b id="vDemand">50 %</b>: deja la barra dentro de la <b>zona verde</b>.</small>
+        <small id="powHint">La red pide <b id="vDemand">50 %</b>: deja la barra dentro de la <b>zona verde</b>.</small>
       </div>
 
-      <label class="slider">
+      <label class="slider" id="rodsBox">
         <span class="slider-head">Barras de control (insertadas) <b id="vRods">40 %</b></span>
         <input type="range" id="rods" min="0" max="100" step="1" value="40">
-        <small>Más insertadas = menos potencia. Teclas <kbd>↑</kbd> <kbd>↓</kbd> (↑ sube la potencia)</small>
+        <small id="rodsHint">Más insertadas = menos potencia. Teclas <kbd>↑</kbd> <kbd>↓</kbd> (↑ sube la potencia)</small>
       </label>
 
       <label class="slider">
@@ -62,74 +63,83 @@
 
   <!-- Consola de protocolo de emergencia: se abre y se cierra; las palancas siguen funcionando -->
   <button class="console-toggle" id="consoleToggle" aria-expanded="false" aria-controls="console">
-    🛟 Protocolo de emergencia <kbd>T</kbd>
+    🛟 Protocolo de emergencia <span class="badge" id="cueCount" hidden>0</span> <kbd>T</kbd>
   </button>
 
   <section class="console" id="console" aria-label="Terminal y guía de protocolo de emergencia" aria-hidden="true">
     <header class="console-bar">
       <b>🛟 Sala de control</b>
-      <small>Opera el reactor con comandos siguiendo la guía, o sigue usando las palancas de arriba.</small>
+      <small>Los procedimientos corren en paralelo a las palancas. Cuando suene una señal, ejecuta su comando.</small>
       <button class="console-close" id="consoleClose" title="Cerrar (Esc)">Cerrar ✕</button>
     </header>
 
     <div class="console-body">
       <!-- Guía de protocolo: procedimientos listos para cargar en la terminal -->
       <div class="cpane guide" id="paneGuide" aria-label="Guía de protocolo de emergencia">
-        <p class="guide-intro">Un operador real no improvisa: sigue procedimientos. Elige la situación, pulsa <b>Cargar ▸</b> y luego <b>Ejecutar</b>.</p>
+        <p class="guide-intro">Las palancas llevan el día a día; los <b>procedimientos</b> responden a las señales (🔔). La tarjeta que se ilumina es la que toca ahora. Pulsa <b>Cargar ▸</b> y luego <b>Ejecutar</b>.</p>
 
-        <article class="proto">
-          <h3>🔼 La red pide más potencia</h3>
-          <p>Saca barras poco a poco hasta que la potencia alcance la demanda.</p>
-          <pre class="proto-cmds">barras 30
-esperar 3
-estado</pre>
-          <button class="btn load" data-cmds="barras 30; esperar 3; estado">Cargar ▸</button>
+        <article class="proto bad" data-cue="apagon">
+          <h3>🔌 Apagón de la red</h3>
+          <p>Las bombas pierden energía y el núcleo se calienta. Arranca el generador diésel e inserta barras mientras llega a su régimen.</p>
+          <pre class="proto-cmds">diesel</pre>
+          <button class="btn load" data-cmds="diesel">Cargar ▸</button>
         </article>
 
-        <article class="proto">
-          <h3>🔽 La red pide menos potencia</h3>
-          <p>Inserta barras para bajar la potencia sin que el núcleo se enfríe de más.</p>
-          <pre class="proto-cmds">barras 65
-esperar 3
-estado</pre>
-          <button class="btn load" data-cmds="barras 65; esperar 3; estado">Cargar ▸</button>
-        </article>
-
-        <article class="proto warn">
+        <article class="proto warn" data-cue="fuga">
           <h3>💧 Fuga de refrigerante</h3>
-          <p>La bomba pierde fuerza unos segundos. Súbela al máximo y baja un poco la potencia.</p>
-          <pre class="proto-cmds">bomba 100
-barras 55
-esperar 4
-estado</pre>
-          <button class="btn load" data-cmds="bomba 100; barras 55; esperar 4; estado">Cargar ▸</button>
+          <p>La bomba pierde fuerza. Aísla el lazo averiado: la fuga se corta, aunque ese lazo enfría un poco menos unos segundos.</p>
+          <pre class="proto-cmds">aislar_fuga</pre>
+          <button class="btn load" data-cmds="aislar_fuga">Cargar ▸</button>
         </article>
 
-        <article class="proto warn">
+        <article class="proto warn" data-cue="pico">
           <h3>⚡ Pico de reactividad</h3>
-          <p>La potencia sube sola. Inserta barras y refuerza el enfriamiento hasta que pase.</p>
-          <pre class="proto-cmds">barras 70
-bomba 90
-esperar 3
-estado</pre>
-          <button class="btn load" data-cmds="barras 70; bomba 90; esperar 3; estado">Cargar ▸</button>
+          <p>La potencia sube sola. El boro frena la reacción, pero despacio: inyéctalo en cuanto veas la señal.</p>
+          <pre class="proto-cmds">boro 40</pre>
+          <button class="btn load" data-cmds="boro 40">Cargar ▸</button>
         </article>
 
-        <article class="proto bad">
-          <h3>🌡 Sobrecalentamiento</h3>
-          <p>Si la temperatura entra en rojo: enfría al máximo y frena la reacción. Si no baja, ejecuta <b>scram</b>.</p>
-          <pre class="proto-cmds">bomba 100
-barras 85
-esperar 5
-estado</pre>
-          <button class="btn load" data-cmds="bomba 100; barras 85; esperar 5; estado">Cargar ▸</button>
+        <article class="proto bad" data-cue="calor">
+          <h3>🌡 Temperatura alta</h3>
+          <p>Abre el desvío de vapor: enfría muy rápido, pero esa energía no llega a la red y necesita unos segundos para recargarse.</p>
+          <pre class="proto-cmds">desviar_vapor</pre>
+          <button class="btn load" data-cmds="desviar_vapor">Cargar ▸</button>
         </article>
 
-        <article class="proto bad">
-          <h3>⛔ Apagado de emergencia</h3>
-          <p>Último recurso: detiene la reacción de golpe. Es seguro, pero la red se queda sin energía.</p>
-          <pre class="proto-cmds">scram</pre>
-          <button class="btn load" data-cmds="scram">Cargar ▸</button>
+        <article class="proto" data-cue="diluir">
+          <h3>🧪 Sobra boro</h3>
+          <p>Si ya pasó el peligro y la potencia no alcanza lo que pide la red, diluye el boro (también despacio).</p>
+          <pre class="proto-cmds">boro 0</pre>
+          <button class="btn load" data-cmds="boro 0">Cargar ▸</button>
+        </article>
+
+        <article class="proto bad" data-cue="scram">
+          <h3>⛔ Apagado de emergencia (SCRAM)</h3>
+          <p>El botón rojo ya <b>no termina la partida</b>: inserta todas las barras y empieza la fase de <b>enfriamiento</b>. Aunque la reacción se detiene, queda calor residual. Meta: bajar de 90 °C en 90 s.</p>
+          <pre class="proto-cmds">1. bomba al 100 % (palanca)
+2. desviar_vapor
+3. enfriar_residual  (al bajar de 200 °C)</pre>
+        </article>
+
+        <article class="proto warn" data-cue="enfriar">
+          <h3>♨ Enfriar tras el SCRAM</h3>
+          <p>Bomba al máximo y desvío de vapor abierto hasta bajar de 200 °C. El agua sola ya no basta.</p>
+          <pre class="proto-cmds">desviar_vapor</pre>
+          <button class="btn load" data-cmds="desviar_vapor">Cargar ▸</button>
+        </article>
+
+        <article class="proto" data-cue="rhr">
+          <h3>✅ Enfriamiento residual (RHR)</h3>
+          <p>Por debajo de 200 °C conecta el sistema de calor residual: tarda unos segundos en arrancar y lleva el núcleo a parada fría.</p>
+          <pre class="proto-cmds">enfriar_residual</pre>
+          <button class="btn load" data-cmds="enfriar_residual">Cargar ▸</button>
+        </article>
+
+        <article class="proto">
+          <h3>🔎 Consultas</h3>
+          <p>No cambian nada: sirven para mirar. <b>procesos</b> muestra el estado de cada procedimiento; <b>estado</b>, las lecturas.</p>
+          <pre class="proto-cmds">procesos; estado</pre>
+          <button class="btn load" data-cmds="procesos; estado">Cargar ▸</button>
         </article>
       </div>
 
@@ -155,7 +165,7 @@ estado</pre>
         <li>Ajusta la <b>bomba de refrigerante</b> para mantener la <b>temperatura</b> en la zona verde.</li>
         <li>Vigila los avisos: habrá <b>fugas</b>, <b>picos</b> y cambios de demanda.</li>
       </ol>
-      <p>Novedad: también puedes operar como un profesional desde la <b>🛟 terminal de protocolo</b> (botón abajo a la derecha o tecla <kbd>T</kbd>), ejecutando comandos según una guía.</p>
+      <p>Además hay <b>procedimientos</b> en paralelo (apagones, fugas, picos, calor): cuando aparezca una señal 🔔, ábrela en la <b>🛟 terminal</b> (tecla <kbd>T</kbd>) y ejecuta el comando que indica. Y el <b>⛔ SCRAM</b> no termina la partida: empieza el enfriamiento del núcleo.</p>
       <p>Elige la dificultad para empezar:</p>
       <div class="row">
         <button class="btn primary big" data-diff="facil">Fácil · 1 min</button>

@@ -13,7 +13,7 @@ Pequeños juegos que se ejecutan **localmente en el navegador**, sin instalar na
 
 | Juego | Carpeta | De qué trata |
 |---|---|---|
-| ☢️ Estabiliza el reactor | `reactor/` | Controla barras de control y refrigerante para dar la potencia que pide la red sin que el núcleo se sobrecaliente. 3 dificultades, eventos aleatorios (fugas, picos, cambios de demanda). |
+| ☢️ Estabiliza el reactor | `reactor/` | Controla barras y refrigerante con las palancas, y responde a las señales (apagón, fuga, pico, calor) con procedimientos en una terminal: `boro`, `desviar_vapor`, `aislar_fuga`, `diesel`, `enfriar_residual`. El SCRAM inicia una fase de enfriamiento hasta parada fría. 3 dificultades. |
 | 🧩 Programa al robot | `robot2/` | Versión con bloques estilo Scratch que se **arrastran y sueltan**: bucles «repetir» (for) y «mientras» (while) con condiciones, y un bloque **«Romper»** para abrirse paso entre rocas (los muros de acero no se rompen). 8 niveles. Las estrellas dependen de cuántos bloques uses frente a la solución de referencia del nivel (3★ = igual o menos; 2★ = hasta 1,5 veces; 1★ = el resto). |
 | 🧪 Duelo de Química Aplicada | `quizz_QA/` | Quiz para dos jugadores con pulsadores de teclado (A / L): 10 preguntas de un banco de 30, robo de pregunta y desempate. |
 
@@ -24,7 +24,7 @@ Controles: los juegos se pueden jugar con mouse/táctil; el teclado está explic
 ```
 index.html          menú principal
 shared/style.css    estilos comunes
-reactor/            sim.js (física, sin DOM) · game.js (dibujo y controles) · index.html · reactor.css
+reactor/            sim.js (física, sin DOM) · commands.js (terminal, sin DOM) · game.js (dibujo y controles) · index.html · reactor.css
 robot2/             logic.js (reglas) · levels.js (mapas) · game.js (interfaz, bloques arrastrables) · index.html · robot2.css
 quizz_QA/           quiz de dos jugadores (index.html · style.css · js/ con un módulo por tema; ver su README)
 tools/              pruebas automáticas con Node (opcional)
