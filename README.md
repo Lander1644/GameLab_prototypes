@@ -17,6 +17,7 @@ Pequeños juegos que se ejecutan **localmente en el navegador**, sin instalar na
 | 🧩 Programa al robot | `robot2/` | Versión con bloques estilo Scratch que se **arrastran y sueltan**: bucles «repetir» (for) y «mientras» (while) con condiciones, y un bloque **«Romper»** para abrirse paso entre rocas (los muros de acero no se rompen). 8 niveles. Las estrellas dependen de cuántos bloques uses frente a la solución de referencia del nivel (3★ = igual o menos; 2★ = hasta 1,5 veces; 1★ = el resto). |
 | 🐍 Programa al robot en Python | `robot_py/` | Misma aventura que el robot de bloques, pero escribiendo **Python real** (`for`, `while`, `if`) en un editor. Funciona sin internet: el intérprete Skulpt viaja en `robot_py/lib/`. 6 niveles. |
 | 🧪 Duelo de Química Aplicada | `quizz_QA/` | Quiz para dos jugadores con pulsadores de teclado (A / L): 10 preguntas de un banco de 30, robo de pregunta y desempate. |
+| 🐺 Lactolab · Turno de cierre | `lactolab/` | Escape room de biotecnología para una persona: guía al lobito por el laboratorio, resuelve preguntas y minijuegos, y comprueba si la lactasa funcionó en el lote de leche 07. Cinco minutos y tres oportunidades para equivocarte. |
 
 Controles: los juegos se pueden jugar con mouse/táctil; el teclado está explicado dentro de cada juego.
 
@@ -28,6 +29,7 @@ shared/style.css    estilos comunes
 reactor/            sim.js (física, sin DOM) · commands.js (terminal, sin DOM) · game.js (dibujo y controles) · index.html · reactor.css
 robot2/             logic.js (reglas) · levels.js (mapas) · game.js (interfaz, bloques arrastrables) · index.html · robot2.css
 quizz_QA/           quiz de dos jugadores (index.html · style.css · js/ con un módulo por tema; ver su README)
+lactolab/           escape room de biotecnología (index.html · gráficos vectoriales · música y efectos locales)
 tools/              pruebas automáticas con Node (opcional)
 ```
 
