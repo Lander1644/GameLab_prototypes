@@ -21,12 +21,13 @@ window.Quiz = window.Quiz || {};
     TECLAS: ['a', 'l'],
     TICK_MS: 100,
     TIEMPOS: {
-      LECTURA: 15,
+      LECTURA: 10,
       PULSADORES: 10,
       RESPUESTA: 10,
+      INTERACTIVA: 15,
       SUSPENSO: 1.5,
       PAUSA_MENSAJE: 2,
-      PAUSA_FIN_RONDA: 2
+      PAUSA_FIN_RONDA: 4
     },
     PUNTOS: {
       ACIERTO: 1,

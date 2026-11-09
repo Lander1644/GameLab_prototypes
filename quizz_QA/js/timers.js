@@ -83,7 +83,7 @@
   }
 
   function iniciarTemporizadorRespuesta(onFin, etiqueta) {
-    iniciar('respuesta', Quiz.Config.TIEMPOS.RESPUESTA, etiqueta || 'Elige una respuesta', onFin, true);
+    iniciar('respuesta', Quiz.Estado.ronda.pregunta.tipo ? Quiz.Config.TIEMPOS.INTERACTIVA : Quiz.Config.TIEMPOS.RESPUESTA, etiqueta || 'Elige una respuesta', onFin, true);
   }
 
   /** Pausa sin contador visible (suspenso, lectura de mensajes, final de ronda). */

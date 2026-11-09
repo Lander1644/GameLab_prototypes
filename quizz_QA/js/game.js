@@ -9,7 +9,7 @@
  * Mapa de una ronda:
  *
  *   iniciarRonda
- *     └─ lectura (15 s) ──► alTerminarLectura ──► pulsadores (10 s)
+ *     └─ lectura (10 s) ──► alTerminarLectura ──► pulsadores (10 s)
  *           ├─ nadie pulsa ─► alAgotarseTiempoPulsadores ─► finalizarRonda
  *           └─ alguien pulsa ─► Respuestas.iniciarTurnoRespuesta
  *                 └─► Respuestas informa con alResolverTurno:
@@ -83,7 +83,7 @@
     Quiz.Jugadores.mostrarEstadoTecla(1, 'Tecla bloqueada', 'bloqueada');
     Quiz.Pantallas.mostrarMensaje('Lee la pregunta con atención... las teclas se activarán al terminar el tiempo de lectura.', 'info');
 
-    // 3) Comienza el tiempo de lectura (15 s).
+    // 3) Comienza el tiempo de lectura (10 s).
     Quiz.Temporizadores.iniciarTemporizadorLectura(alTerminarLectura);
   }
 
@@ -91,8 +91,9 @@
   function alTerminarLectura() {
     const ronda = Quiz.Estado.ronda;
     if (!ronda || ronda.fase !== FASES.LECTURA) { return; }
+    if (Quiz.Estudio) Quiz.Estudio.pulsen();
     const t = Quiz.Estado.jugadores.map(function (j) { return j.tecla.toUpperCase(); });
-    Quiz.Pantallas.mostrarMensaje('¡YA! ' + Quiz.Estado.jugadores[0].nombre + ': ' + t[0] +
+    Quiz.Pantallas.mostrarMensaje('¡PULSEN! ' + Quiz.Estado.jugadores[0].nombre + ': ' + t[0] +
       '   |   ' + Quiz.Estado.jugadores[1].nombre + ': ' + t[1], 'pulsador');
     Quiz.Pulsadores.activarPulsadores([0, 1]);
   }

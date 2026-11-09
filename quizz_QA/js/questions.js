@@ -18,6 +18,7 @@
   // ---------------------------------------------------------------------
 
   function mezclarOpciones(pregunta) {
+    if (pregunta.tipo) return Object.assign({}, pregunta);
     const opciones = Util.mezclar(pregunta.opciones);
 
     return {
@@ -36,9 +37,10 @@
     const preparadas = Util.mezclar(Quiz.BancoPreguntas)
       .map(mezclarOpciones);
 
-    Quiz.Estado.preguntasPartida = preparadas.slice(0, total);
+    const reto = Util.mezclar(Quiz.BancoInteractivos)[0];
+    Quiz.Estado.preguntasPartida = Util.mezclar(preparadas.slice(0, total - 1).concat([reto]));
 
-    Quiz.Estado.reservaDesempate = preparadas.slice(total);
+    Quiz.Estado.reservaDesempate = preparadas.slice(total - 1);
 
     Quiz.Estado.indiceRonda = 0;
   }
@@ -69,7 +71,7 @@
   // ---------------------------------------------------------------------
 
   function validarRespuesta(pregunta, indiceElegido) {
-    return indiceElegido === pregunta.indiceCorrecto;
+    return pregunta.tipo ? Quiz.Interactivos.validar(pregunta, indiceElegido) : indiceElegido === pregunta.indiceCorrecto;
   }
 
 
@@ -92,6 +94,13 @@
       ronda.pregunta.enunciado;
 
     contenedor.innerHTML = '';
+    const interactiva = !!ronda.pregunta.tipo;
+    Util.porId('reto').hidden = !interactiva;
+    contenedor.hidden = interactiva;
+    Util.porId('tema-pregunta').textContent = ronda.pregunta.tema;
+    Util.porId('tipo-pregunta').textContent = interactiva ? 'RETO INTERACTIVO · 15 s' : 'ELIGE UNA RESPUESTA';
+    Util.porId('question-panel').removeAttribute('data-result');
+    if (interactiva) { Quiz.Interactivos.montar(ronda.pregunta); return; }
 
     ronda.pregunta.opciones.forEach(function (texto, i) {
 
@@ -131,6 +140,7 @@
   // ---------------------------------------------------------------------
 
   function habilitarOpciones(habilitar) {
+    if (Quiz.Estado.ronda && Quiz.Estado.ronda.pregunta.tipo) { Quiz.Interactivos.habilitar(habilitar); return; }
 
     obtenerBotonesOpciones().forEach(function (boton) {
 
@@ -174,6 +184,7 @@
   // ---------------------------------------------------------------------
 
   function mostrarRespuestaCorrecta() {
+    if (Quiz.Estado.ronda.pregunta.tipo) { Quiz.Interactivos.revelar(); return; }
 
     const correcta = Quiz.Estado.ronda.pregunta.indiceCorrecto;
 
@@ -196,6 +207,7 @@
   // ---------------------------------------------------------------------
 
   function limpiarMarcas() {
+    if (Quiz.Estado.ronda && Quiz.Estado.ronda.pregunta.tipo) { Quiz.Interactivos.reiniciar(); return; }
 
     obtenerBotonesOpciones().forEach(function (boton) {
 
@@ -218,7 +230,7 @@
 
     const p = Quiz.Estado.ronda.pregunta;
 
-    return p.opciones[p.indiceCorrecto];
+    return p.tipo ? p.explicacion : p.opciones[p.indiceCorrecto];
   }
 
 

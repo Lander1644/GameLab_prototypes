@@ -34,6 +34,7 @@
     if (!/[?&]rapido\b/.test(window.location.search)) { return; }
     var T = Quiz.Config.TIEMPOS;
     T.LECTURA = 3; T.PULSADORES = 5; T.RESPUESTA = 5;
+    T.INTERACTIVA = 5;
     T.SUSPENSO = 1; T.PAUSA_MENSAJE = 1.5; T.PAUSA_FIN_RONDA = 2;
   }
 
@@ -70,6 +71,7 @@
         return;
       }
       Quiz.Pantallas.mostrarErrorRegistro('');
+      document.activeElement.blur();
       Quiz.Juego.iniciarPartida();
     });
   }

@@ -15,7 +15,11 @@
     document.querySelectorAll('.pantalla').forEach(function (pantalla) {
       pantalla.classList.toggle('activa', pantalla.id === 'pantalla-' + nombre);
     });
+    const activa = porId('pantalla-' + nombre);
+    activa.tabIndex = -1;
+    activa.focus({ preventScroll: true });
     Quiz.Estado.pantalla = nombre;
+    if (Quiz.Estudio) Quiz.Estudio.alCambiarPantalla(nombre);
   }
 
   // ---------- Las seis pantallas del juego ----------
@@ -72,6 +76,7 @@
     const caja = porId('mensaje');
     caja.className = 'mensaje mensaje-' + (tipo || 'info');
     caja.textContent = texto;
+    porId('question-panel').dataset.result = (tipo === 'robo' && Quiz.Estado.ronda && Quiz.Estado.ronda.ganadorRonda === null) ? 'info' : (tipo || 'info');
   }
 
   /** Actualiza el número y la barra del temporizador. */
@@ -81,6 +86,7 @@
     const porcentaje = Math.max(0, Math.min(100, (segundosRestantes / segundosTotales) * 100));
     porId('barra-progreso').style.width = porcentaje + '%';
     porId('zona-temporizador').classList.toggle('urgente', segundosRestantes <= 3);
+    if (Quiz.Estudio) Quiz.Estudio.actualizarCuenta(segundosRestantes);
   }
 
   /** Deja el temporizador "apagado" con un texto (por ejemplo durante el suspenso). */

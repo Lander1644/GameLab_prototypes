@@ -1,91 +1,11 @@
-
-/* =====================================================================
- * visuals.js — ANIMACIÓN VISUAL DEL MARCADOR
- * ---------------------------------------------------------------------
- * Actualiza el nivel de los frascos al cambiar el texto del puntaje.
- * No modifica puntos, preguntas, temporizadores ni reglas del juego.
- * ===================================================================== */
-
-(function () {
-  'use strict';
-
-  function conectarFrasco(indice) {
-
-    const puntos = document.getElementById('puntos-' + indice);
-
-    const tarjeta = document.getElementById('jugador-' + indice);
-
-    if (!puntos || !tarjeta) return;
-
-
-    function actualizarFrasco() {
-
-      // Leer los puntos actuales del jugador
-      const valor = Math.max(
-        0,
-        Number(puntos.textContent.trim()) || 0
-      );
-
-
-      // Convertir puntos en porcentaje de llenado
-      const porcentaje = Math.min(
-        100,
-        (valor / 10) * 100
-      );
-
-
-      // Actualizar el nivel del líquido mediante CSS
-      tarjeta.style.setProperty(
-        '--fill',
-        porcentaje + '%'
-      );
-
-
-      // Actualizar descripción accesible
-      const frasco = tarjeta.querySelector('.potion-score');
-
-      if (frasco) {
-        frasco.setAttribute(
-          'aria-label',
-          valor + ' puntos'
-        );
-      }
-
-    }
-
-
-    // Detectar automáticamente cambios en el marcador
-    new MutationObserver(actualizarFrasco).observe(puntos, {
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
-
-
-    // Mostrar nivel inicial
-    actualizarFrasco();
-
-  }
-
-
-  function iniciar() {
-    conectarFrasco(0);
-    conectarFrasco(1);
-  }
-
-
-  // Esperar a que el HTML esté cargado
-  if (document.readyState === 'loading') {
-
-    document.addEventListener(
-      'DOMContentLoaded',
-      iniciar
-    );
-
-  } else {
-
-    iniciar();
-
-  }
-
-})();
+/* El presentador y la cuenta visual no alteran turnos, puntos ni tiempos. */
+(function(Quiz){
+ 'use strict';
+ const $=Quiz.Util.porId;
+ let goTimer=null;
+ function ocultar(){clearTimeout(goTimer);goTimer=null;$('cuenta-capa').hidden=true;$('cuenta-capa').classList.remove('go');Quiz.Interactivos.cancelarArrastre();}
+ function alCambiarPantalla(nombre){ocultar();document.body.dataset.screen=nombre;}
+ function actualizarCuenta(segundos){const r=Quiz.Estado.ronda;if(!r||r.fase!==Quiz.FASES.LECTURA)return;const overlay=$('cuenta-capa');if(segundos>0&&segundos<=2){overlay.hidden=false;overlay.classList.remove('go');const palabra=segundos>1?'PREPARADOS…':'LISTOS…';if($('cuenta-palabra').textContent!==palabra)$('cuenta-palabra').textContent=palabra;}}
+ function pulsen(){clearTimeout(goTimer);const overlay=$('cuenta-capa');overlay.hidden=false;overlay.classList.add('go');$('cuenta-palabra').textContent='¡PULSEN!';goTimer=setTimeout(ocultar,600);}
+ Quiz.Estudio={actualizarCuenta,pulsen,alCambiarPantalla};
+})(window.Quiz);

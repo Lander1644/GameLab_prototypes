@@ -30,6 +30,7 @@
     ronda.respuestaElegida = null;
     ronda.turnoProcesado = false;     // este turno todavía no se ha evaluado
 
+    if (ronda.pregunta.tipo) Quiz.Interactivos.reiniciar();
     Quiz.Preguntas.habilitarOpciones(true);
     Quiz.Temporizadores.iniciarTemporizadorRespuesta(
       alAgotarseTiempoRespuesta,
@@ -47,7 +48,8 @@
     if (!Quiz.Estado.partidaActiva || !ronda) { return; }
     if (ronda.fase !== FASES.RESPUESTA) { return; }
     if (ronda.respuestaElegida !== null) { return; }
-    if (indiceOpcion < 0 || indiceOpcion >= ronda.pregunta.opciones.length) { return; }
+    if (ronda.pregunta.tipo) { if (!Array.isArray(indiceOpcion)) return; }
+    else if (!Number.isInteger(indiceOpcion) || indiceOpcion < 0 || indiceOpcion >= ronda.pregunta.opciones.length) { return; }
 
     ronda.respuestaElegida = indiceOpcion;
     ronda.fase = FASES.SUSPENSO;                       // cierra la puerta a más clics

@@ -88,6 +88,7 @@
 
     // 1) Cerrar la puerta inmediatamente.
     ronda.fase = FASES.TRANSICION;
+    if (Quiz.Estudio) Quiz.Estudio.alCambiarPantalla(Quiz.Estado.pantalla);
     ronda.habilitados = [];
     ronda.jugadorEnTurno = indice;
     if (!ronda.esRobo) { ronda.primerJugador = indice; }
